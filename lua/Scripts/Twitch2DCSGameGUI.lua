@@ -1,24 +1,24 @@
-local settings = { 
-    username = "",      -- Your twitch username
-    oathToken = "",     -- Go to https://twitchapps.com/tmi/ connect your account and generate a key. Copy paste the full value including the "oauth:" example: "oauth:2mwce4mdsgasddg3ml99k3phwa9l7"
-    caps = {
-        "twitch.tv/membership",
-    },
-    hostAddress = "irc.chat.twitch.tv",
-    port = 6667,
-    hotkey = "Ctrl+Alt+Tab",
-    timeout = 0,
-}
-
 local base = _G
 
 package.path  = package.path..";.\\LuaSocket\\?.lua;"..'.\\Scripts\\?.lua;'.. '.\\Scripts\\UI\\?.lua;'
 package.cpath = package.cpath..";.\\LuaSocket\\?.dll;"
 
+module("twitch_chat")
+
+local require           = base.require
+local os 			    = base.os
+local io 			    = base.io
+local table             = base.table
+local string            = base.string
+local math              = base.math
+local assert        	= base.assert
+local pairs         	= base.pairs
+
+local lfs 			    = require('lfs')
 local socket            = require("socket") 
+local net               = require('net')
 local DCS               = require("DCS") 
 local U                 = require('me_utilities')
-local lfs 				= require('lfs')
 local Skin				= require('Skin')
 local Gui               = require('dxgui')
 local DialogLoader      = require('DialogLoader')
@@ -27,48 +27,72 @@ local ListBoxItem       = require('ListBoxItem')
 local Tools 			= require('tools')
 
 local _modes = {     
+    hidden = "hidden",
     read = "read",
     write = "write",
 }
 
 local _isWindowCreated = false
-local _currentMode = _modes.read
 local _currentWheelValue = 0
-local _chatWindowPosition = {} 
 local _listStatics = {}
 local _listMessages = {}
+local _userSkin = { }
 
+local _colors = { 
 
-local twitch = { 
-    username = settings.username,
-    oathToken = settings.oathToken,
-    caps = settings.caps,
-    hostAddress = settings.hostAddress,
-    port = settings.port,
-    hotkey = settings.hotkey,
-    timeout = settings.timeout,
-    connection = nil,
-    logFile = io.open(lfs.writedir()..[[Logs\mul_twitch_chat.log]], "w"),
-    lastPing = 0,
 }
+local twitch = { 
+    connection = nil,
+    logFile = io.open(lfs.writedir()..[[Logs\Twitch2DCS.log]], "w")
+}
+
+function twitch.loadConfiguration()
+    twitch.log("Loading config file...")
+    local tbl = Tools.safeDoFile(lfs.writedir() .. 'Config/Twitch2DCSConfig.lua', false)
+    if (tbl and tbl.config) then
+        twitch.log("Configuration exists...")
+        twitch.config = tbl.config
+    else
+        twitch.log("Configuration not found, creating defaults...")
+        twitch.config = { 
+            username = "",
+            oathToken = "",
+            caps = {
+                "twitch.tv/membership",
+            },
+            hostAddress = "irc.chat.twitch.tv",
+            port = 6667,
+            mode = "write",
+            hotkey = "Ctrl+Shift+escape",
+            timeout = 0,
+            windowPosition = { x = 66, y = 13 }
+        }
+        twitch.saveConfiguration()
+    end      
+end
+
+function twitch.saveConfiguration()
+    U.saveInFile(twitch.config, 'config', lfs.writedir() .. 'Config/Twitch2DCSConfig.lua')	
+end
+
 
 function twitch.createServer()   
     twitch.connection = socket.tcp()
 
-    local ip = socket.dns.toip(twitch.hostAddress)
-    local success = assert(twitch.connection:connect(ip, twitch.port))
+    local ip = socket.dns.toip(twitch.config.hostAddress)
+    local success = assert(twitch.connection:connect(ip, twitch.config.port))
     
     if not success then
-        twitch.log("Unable to connect to "..twitch.hostAddress.."["..ip.."]:"..twitch.port)
+        twitch.log("Unable to connect to "..twitch.config.hostAddress.."["..ip.."]:"..twitch.config.port)
     else
-        twitch.log("Conncted to "..twitch.hostAddress.."["..ip.."]:"..twitch.port)
+        twitch.log("Conncted to "..twitch.config.hostAddress.."["..ip.."]:"..twitch.config.port)
        
-        twitch.connection:settimeout(twitch.timeout)   -- REALLY short timeout.  Asynchronous operation required.
+        twitch.connection:settimeout(twitch.config.timeout)  
         
-        twitch.send("CAP REQ : "..table.concat(twitch.caps, " "))
-        twitch.send("PASS "..twitch.oathToken)
-        twitch.send("NICK "..twitch.username)
-        twitch.send("JOIN #"..twitch.username)
+        twitch.send("CAP REQ : "..table.concat(twitch.config.caps, " "))
+        twitch.send("PASS "..twitch.config.oathToken)
+        twitch.send("NICK "..twitch.config.username)
+        twitch.send("JOIN #"..twitch.config.username)
     end
 end
 
@@ -79,12 +103,6 @@ function twitch.send(data)
     else    
         twitch.log("DCS -> Twitch: "..data)
      end
-end
-
-function twitch.checkPing()
-    if(twitch.lastPing - socket.gettime() > 30) then
-        twitch.send("PING")
-    end
 end
 
 function twitch.receive() 
@@ -100,32 +118,29 @@ function twitch.receive()
                     local prefix, cmd, param, param1, param2
                     local user, userhost
                     prefix, cmd, param = string.match(buffer, "^:([^ ]+) ([^ ]+)(.*)$")
-                    --twitch.log("prefix: "..(prefix or "(nil)").." cmd: "..(cmd or "(nil)").." param: "..(param or "(nil)"))
+                    param = string.sub(param,2)
+                    param1, param2 = string.match(param,"^([^:]+) :(.*)$")
+                    user, userhost = string.match(prefix,"^([^!]+)!(.*)$")
                     if cmd == "376" then
-                        twitch.send("JOIN #"..twitch.username)
+                        twitch.send("JOIN #"..twitch.config.username)
                     end
                     if param ~= nil then
-                        param = string.sub(param,2)
-                        param1, param2 = string.match(param,"^([^:]+) :(.*)$")
-                        --twitch.log("param1: "..(param1 or "(nil)").." param2: "..(param2 or "(nil)"))
-                        if cmd == "PRIVMSG" then
-                            user, userhost = string.match(prefix,"^([^!]+)!(.*)$")
-                            --twitch.log("user: "..(user or "(nil)").." userhost: "..(userhost or "(nil)"))
-                            twitch.addMessage(param2, user, typesMessage.sys)
+                        if cmd == "PRIVMSG" then     
+                            if(user == twitch.config.username) then
+                                twitch.addMessage(param2, user, typesMessage.me)
+                            else
+                                twitch.addMessage(param2, user, typesMessage.sys)
+                            end           
                         elseif cmd == "JOIN" then
-                            user, userhost = string.match(prefix,"^([^!]+)!(.*)$")
-                            --twitch.log("user: "..(user or "(nil)").." userhost: "..(userhost or "(nil)"))
-                            twitch.addMessage(user.." joined", "", typesMessage.my)
+                            twitch.addMessage(user.." joined", "", typesMessage.msg)
                         elseif cmd == "PART" then
-                            user, userhost = string.match(prefix,"^([^!]+)!(.*)$")
-                            --twitch.log("user: "..(user or "(nil)").." userhost: "..(userhost or "(nil)"))
-                            twitch.addMessage(user.." left", "", typesMessage.my)
+                            twitch.addMessage(user.." left", "", typesMessage.msg)
                         end
                     end
                 end
             end
-        else 
-            --twitch.log("Err: "..err)
+        elseif err ~= "timeout" then
+            twitch.log("Err: "..err)
         end
     until err
 end
@@ -195,7 +210,7 @@ function twitch.onMouseWheel_eMessage(self, x, y, clicks)
 end
 
 function twitch.updateListM()
-    for k,v in base.pairs(_listStatics) do
+    for k,v in pairs(_listStatics) do
         v:setText("")    
     end
    
@@ -219,7 +234,7 @@ function twitch.updateListM()
 end
 
 function twitch.createWindow()
-     window = DialogLoader.spawnDialogFromFile(lfs.writedir() .. 'Scripts\\dialogs\\twitch_chat.dlg', cdata)
+    window = DialogLoader.spawnDialogFromFile(lfs.writedir() .. 'Scripts\\dialogs\\twitch_chat.dlg', cdata)
 
     box         = window.Box
     pNoVisible  = window.pNoVisible
@@ -231,7 +246,7 @@ function twitch.createWindow()
     vsScroll.onChange = twitch.onChange_vsScroll
     eMessage.onChange = onChange_eMessage    
     
-    window:addHotKeyCallback(twitch.hotkey, twitch.onHotkey)
+    window:addHotKeyCallback(twitch.config.hotkey, twitch.onHotkey)
     pMsg:addMouseWheelCallback(twitch.onMouseWheel_eMessage)
     
     vsScroll:setRange(1,1)
@@ -254,9 +269,8 @@ function twitch.createWindow()
 
     typesMessage =
     {
-        my          = pNoVisible.eYellowText:getSkin(),
-        red         = pNoVisible.eRedText:getSkin(),
-        blue        = pNoVisible.eBlueText:getSkin(),
+        msg         = pNoVisible.eYellowText:getSkin(),
+        me          = pNoVisible.eBlueText:getSkin(),
         sys         = pNoVisible.eWhiteText:getSkin(),
     }
     
@@ -283,8 +297,8 @@ function twitch.createWindow()
             local text = eMessage:getText()            
             if text ~= "\n" and text ~= nil then
                 text = string.sub(text, 1, (string.find(text, '%s+$') or 0) - 1)
-                 twitch.send("PRIVMSG #"..twitch.username.." :"..text)
-                 twitch.addMessage(text, twitch.username, typesMessage.blue).
+                 twitch.send("PRIVMSG #"..twitch.config.username.." :"..text)
+                 twitch.addMessage(text, twitch.config.username, typesMessage.me)
             end
             eMessage:setText("")
             eMessage:setSelectionNew(0,0,0,0)
@@ -299,16 +313,11 @@ function twitch.createWindow()
     testE:setSkin(eMessage:getSkin())	
 
     w, h = Gui.GetWindowSize()
-    
-    _chatWindowPosition.x = w-360-300
-    _chatWindowPosition.y = 0
-    
-    twitch.load_chatWindowPosition()
-    
+            
     twitch.resize(w, h)
     twitch.resizeEditMessage()
     
-    twitch.setMode("write")    
+    twitch.setMode(twitch.config.mode)    
     
     window:addPositionCallback(twitch.positionCallback)     
     twitch.positionCallback()
@@ -323,89 +332,77 @@ function twitch.setVisible(b)
 end
 
 function twitch.setMode(mode)
-    --twitch.log("setMode called "..mode)
-    _currentMode = mode 
+    twitch.log("setMode called "..mode)
+    twitch.config.mode = mode 
     
     if window == nil then
         return
     end
     
-    box:setVisible(true)
-    twitch.setVisible(true)
-    window:setSize(360, 455)
-
-    if _currentMode == "read" then
-        box:setSkin(skinModeRead)
+    if twitch.config.mode == _modes.hidden then
+        box:setVisible(false)
+        twitch.setVisible(false)
         vsScroll:setVisible(false)
         pDown:setVisible(false)
         eMessage:setFocused(false)
         DCS.banKeyboard(false)
-        window:setSkin(Skin.windowSkinChatMin())
+    else
+        box:setVisible(true)
+        twitch.setVisible(true)
+        window:setSize(360, 455)
+
+        if twitch.config.mode == _modes.read then
+            box:setSkin(skinModeRead)
+            vsScroll:setVisible(false)
+            pDown:setVisible(false)
+            eMessage:setFocused(false)
+            DCS.banKeyboard(false)
+            window:setSkin(Skin.windowSkinChatMin())
+        end
+        
+        if twitch.config.mode == _modes.write then
+            box:setSkin(skinModeWrite)
+            vsScroll:setVisible(true)
+            pDown:setVisible(true)        
+            DCS.banKeyboard(true)
+            window:setSkin(Skin.windowSkinChatWrite())		
+            eMessage:setFocused(true)
+        end    
     end
-    
-    if _currentMode == "write" then
-        box:setSkin(skinModeWrite)
-        vsScroll:setVisible(true)
-        pDown:setVisible(true)        
-        DCS.banKeyboard(true)
-        window:setSkin(Skin.windowSkinChatWrite())		
-        eMessage:setFocused(true)
-    end    
+
     twitch.updateListM()
+    twitch.saveConfiguration()
 end
 
 function twitch.getMode()
-    return _currentMode
+    return twitch.config.mode
 end
 
 function twitch.onHotkey()
     if (twitch.getMode() == _modes.write) then
         twitch.setMode(_modes.read)
+    --elseif (twitch.getMode() == _modes.read) then
+       -- twitch.setMode(_modes.hidden)
     else
         twitch.setMode(_modes.write)            
     end 
 end
 
 function twitch.resize(w, h)
-    window:setBounds(_chatWindowPosition.x, _chatWindowPosition.y, 360, 455)    
+    window:setBounds(twitch.config.windowPosition.x, twitch.config.windowPosition.y, 360, 455)    
     box:setBounds(0, 0, 360, 400)
-end
-
-function twitch.load_chatWindowPosition()
-    local tbl = Tools.safeDoFile(lfs.writedir() .. 'MissionEditor/Twitch_chatWindowPositionition.lua', false)
-    if (tbl and tbl._chatWindowPosition and tbl._chatWindowPosition.x and tbl._chatWindowPosition.y) then
-        _chatWindowPosition.x = tbl._chatWindowPosition.x
-        _chatWindowPosition.y = tbl._chatWindowPosition.y
-    end      
-end
-
-function twitch.save_chatWindowPosition()
-    _chatWindowPosition.x, _chatWindowPosition.y = window:getPosition()
-    U.saveInFile(_chatWindowPosition, '_chatWindowPosition', lfs.writedir() .. 'MissionEditor/Twitch_chatWindowPositionition.lua')	
 end
 
 function twitch.positionCallback()
     local x, y = window:getPosition()
 
-    if x < 0 then
-        x = 0
-    end
-
-    if y < 0 then
-        y = 0
-    end
-
-    if x > (w-360) then
-        x = w-360
-    end
-
-    if y > (h-400)then
-        y = h-400
-    end
-
-    --twitch.log("Setting window position: "..x..", "..y)
+    x = math.max(math.min(x, w-360), 0)
+    y = math.max(math.min(y, h-400), 0)
     
     window:setPosition(x, y)
+
+    twitch.config.windowPosition = { x = x, y = y }
+    twitch.saveConfiguration()
 end
 
 function twitch.resizeEditMessage()
@@ -432,15 +429,18 @@ function twitch.show(b)
     end
     
     if b == false then
-        twitch.save_chatWindowPosition()
+        twitch.saveConfiguration()
     end
     
     twitch.setVisible(b)
 end
 
 function twitch.onSimulationFrame()
-    if (twitch.username == nil or twitch.username == '')  or (twitch.oathToken == nil or twitch.oathToken == '') then 
-        -- We cannot login without either of these
+    if twitch.config == nil then
+        twitch.loadConfiguration()
+    end
+
+    if (twitch.config.username == nil or twitch.config.username == '')  or (twitch.config.oathToken == nil or twitch.config.oathToken == '') then 
         return
     end
 

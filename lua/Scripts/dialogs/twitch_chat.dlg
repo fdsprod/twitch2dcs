@@ -1527,7 +1527,7 @@ dialog = {
 		["skinName"] = {
 		},
 		["text"] = {
-			[1] = "Twitch 2 DCS Chat",
+			[1] = "Twitch Chat",
 		},
 		["zOrder"] = {
 			[1] = 120,
