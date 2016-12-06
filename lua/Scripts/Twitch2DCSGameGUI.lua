@@ -25,6 +25,7 @@ local DialogLoader      = require('DialogLoader')
 local EditBox           = require('EditBox')
 local ListBoxItem       = require('ListBoxItem')
 local Tools 			= require('tools')
+local MulChat 			= require('mul_chat')
 
 local _modes = {     
     hidden = "hidden",
@@ -36,11 +37,7 @@ local _isWindowCreated = false
 local _currentWheelValue = 0
 local _listStatics = {}
 local _listMessages = {}
-local _userSkin = { }
 
-local _colors = { 
-
-}
 local twitch = { 
     connection = nil,
     logFile = io.open(lfs.writedir()..[[Logs\Twitch2DCS.log]], "w")
@@ -52,23 +49,16 @@ function twitch.loadConfiguration()
     if (tbl and tbl.config) then
         twitch.log("Configuration exists...")
         twitch.config = tbl.config
+        
+        if not twitch.config.version or twitch.config.version < 1 then
+            twitch.appendConfigAdditionsForVersion1(twitch.config)
+            twitch.saveConfiguration()
+        end
     else
         twitch.log("Configuration not found, creating defaults...")
-        twitch.config = { 
-            username = "",
-            oathToken = "",
-            caps = {
-                "twitch.tv/membership",
-            },
-            hostAddress = "irc.chat.twitch.tv",
-            port = 6667,
-            mode = "write",
-            hotkey = "Ctrl+Shift+escape",
-            timeout = 0,
-            windowPosition = { x = 66, y = 13 }
-        }
+        twitch.config = twitch.newConfig()
         twitch.saveConfiguration()
-    end      
+    end    
 end
 
 function twitch.saveConfiguration()
@@ -127,14 +117,15 @@ function twitch.receive()
                     if param ~= nil then
                         if cmd == "PRIVMSG" then     
                             if(user == twitch.config.username) then
-                                twitch.addMessage(param2, user, typesMessage.me)
+                                twitch.addMessage(param2, user, typesMessage.user)
                             else
-                                twitch.addMessage(param2, user, typesMessage.sys)
+                                local userSkin = twitch.getSkinForUser(user)
+                                twitch.addMessage(param2, user, userSkin)
                             end           
                         elseif cmd == "JOIN" then
-                            twitch.addMessage(user.." joined", "", typesMessage.msg)
+                            twitch.addMessage(user.." joined", "", typesMessage.joinPart)
                         elseif cmd == "PART" then
-                            twitch.addMessage(user.." left", "", typesMessage.msg)
+                            twitch.addMessage(user.." left", "", typesMessage.joinPart)
                         end
                     end
                 end
@@ -143,6 +134,22 @@ function twitch.receive()
             twitch.log("Err: "..err)
         end
     until err
+end
+
+function twitch.getSkinForUser(user) 
+    if not typesMessage.users[user] then
+    
+        local userSkin = pNoVisible.eWhiteText:getSkin()
+        local color = twitch.config.skins.messageColors[math.random(#twitch.config.skins.messageColors)]
+        
+        userSkin.skinData.states.released[2].text.color =  color
+        
+        typesMessage.users[user] = userSkin
+
+        twitch.log("User "..user.." gets color r:"..color.r.." g:"..color.g.." b:"..color.b)
+    end
+
+    return typesMessage.users[user]
 end
 
 function twitch.log(str)
@@ -162,12 +169,17 @@ function twitch.onChange_vsScroll(self)
 end
 
 function twitch.addMessage(message, name, skin)        
-    twitch.log("Adding message - "..name..": "..message)
+
+    if twitch.config.useMutiplayerChat then
+        MulChat.addMessage(message, "Twitch-"..name, skin)
+        return
+    end
+    
     local date = os.date('*t')
 	local dateStr = string.format("%i:%02i:%02i", date.hour, date.min, date.sec)
 
     local name = name
-    if name ~= "" or skin ~= typesMessage.sys then
+    if name ~= "" or skin ~= typesMessage.joinPart then
         name = name..": "
     end
     
@@ -258,24 +270,21 @@ function twitch.createWindow()
     
     skinModeWrite = pNoVisible.pModeWrite:getSkin()
     skinModeRead = pNoVisible.pModeRead:getSkin()
-    
-    skinSelAllies   = pNoVisible.sSelAllies:getSkin()
-    skinNoSelAllies = pNoVisible.sNoSelAllies:getSkin()
-    
-    skinNoSelAll    = pNoVisible.sSelAll:getSkin()
-    skinSelAll      = pNoVisible.sNoSelAll:getSkin()
-        
+            
     eMx,eMy,eMw = eMessage:getBounds()
 
     typesMessage =
     {
-        msg         = pNoVisible.eYellowText:getSkin(),
-        me          = pNoVisible.eBlueText:getSkin(),
-        sys         = pNoVisible.eWhiteText:getSkin(),
+        user = pNoVisible.eWhiteText:getSkin(),
+        joinPart = pNoVisible.eWhiteText:getSkin(),
+        users = {}
     }
-    
+
+    typesMessage.user.skinData.states.released[2].text.color = twitch.config.skins.selfColor
+    typesMessage.joinPart.skinData.states.released[2].text.color = twitch.config.skins.joinPartColor
+
     testStatic = EditBox.new()
-    testStatic:setSkin(typesMessage.sys)
+    testStatic:setSkin(typesMessage.user)
     testStatic:setReadOnly(true)   
     testStatic:setTextWrapping(true)  
     testStatic:setMultiline(true) 
@@ -298,7 +307,7 @@ function twitch.createWindow()
             if text ~= "\n" and text ~= nil then
                 text = string.sub(text, 1, (string.find(text, '%s+$') or 0) - 1)
                  twitch.send("PRIVMSG #"..twitch.config.username.." :"..text)
-                 twitch.addMessage(text, twitch.config.username, typesMessage.me)
+                 twitch.addMessage(text, twitch.config.username, typesMessage.user)
             end
             eMessage:setText("")
             eMessage:setSelectionNew(0,0,0,0)
@@ -444,9 +453,15 @@ function twitch.onSimulationFrame()
         return
     end
 
-    if not window then 
-        twitch.log("Creating window...")
-        twitch.show(true)
+    if window == nil then 
+        if twitch.config.useMutiplayerChat then
+            -- We still need to create the window for the skins
+            if _isWindowCreated == false then
+                twitch.createWindow()    
+            end
+        else
+            twitch.show(true)
+        end
     end
     
     if not twitch.connection then
@@ -455,6 +470,122 @@ function twitch.onSimulationFrame()
     end
 
     twitch.receive()
+end 
+
+function twitch.newConfig()
+    local config = { 
+            username = "",
+            oathToken = "",
+            caps = {
+                "twitch.tv/membership",
+            },
+            hostAddress = "irc.chat.twitch.tv",
+            port = 6667,
+            mode = "write",
+            hotkey = "Ctrl+Shift+escape",
+            timeout = 0,
+            windowPosition = { x = 66, y = 13 }
+        }
+
+    twitch.appendConfigAdditionsForVersion1(config)
+
+    return config
+end
+
+function twitch.appendConfigAdditionsForVersion1(config)     
+    config["version"] = 1
+    config["useMutiplayerChat"] = false
+    config["skins"] = {
+        ["joinPartColor"] = 
+        {
+            ["b"] = 0.878,
+            ["g"] = 0.878,
+            ["r"] = 0.878,
+        },
+        ["selfColor"] = 
+        {
+            ["b"] = 1,
+            ["g"] = 1,
+            ["r"] = 1,
+        },
+        ["messageColors"] = {
+            {
+                ["b"] = 1.000,
+                ["g"] = 0.000,
+                ["r"] = 0.000,
+            },
+            {
+                ["b"] = 0.314,
+                ["g"] = 0.498,
+                ["r"] = 1.000,
+            },
+            {
+                ["b"] = 1.000,
+                ["g"] = 0.565, 
+                ["r"] = 0.118,
+            },
+            {
+                ["b"] = 0.498,
+                ["g"] = 1.000, 
+                ["r"] = 0.000, 
+            },
+            {
+                ["b"] = 0.196,
+                ["g"] = 0.804, 
+                ["r"] = 0.604, 
+            },
+            {
+                ["b"] = 0.000,
+                ["g"] = 0.502,  
+                ["r"] = 0.000, 
+            },
+            {
+                ["b"] = 0.000,
+                ["g"] = 0.271,   
+                ["r"] = 1.000, 
+            },
+            {
+                ["b"] = 0.000,
+                ["g"] = 0.000,    
+                ["r"] = 1.000, 
+            },
+            {
+                ["b"] = 0.125,
+                ["g"] = 0.647,    
+                ["r"] = 0.855,  
+            },
+            {
+                ["b"] = 0.706,
+                ["g"] = 0.412,     
+                ["r"] = 1.000,  
+            },
+            {
+                ["b"] = 0.627,
+                ["g"] = 0.620,     
+                ["r"] = 0.373,  
+            },
+            {
+                ["b"] = 0.341,
+                ["g"] = 0.545,      
+                ["r"] = 0.180,  
+            },
+            {
+                ["b"] = 0.118,
+                ["g"] = 0.412,      
+                ["r"] = 0.824,   
+            },
+            {
+                ["b"] = 0.886,
+                ["g"] = 0.169,       
+                ["r"] = 0.541,    
+            },
+            {
+                ["b"] = 0.133,
+                ["g"] = 0.133,        
+                ["r"] = 0.698,    
+            },     
+        }
+    }
 end 
 
 DCS.setUserCallbacks(twitch)
