@@ -37,6 +37,7 @@ local _isWindowCreated = false
 local _currentWheelValue = 0
 local _listStatics = {}
 local _listMessages = {}
+local _nextChatColorIndex = 1
 
 local twitch = { 
     connection = nil,
@@ -140,13 +141,15 @@ function twitch.getSkinForUser(user)
     if not typesMessage.users[user] then
     
         local userSkin = pNoVisible.eWhiteText:getSkin()
-        local color = twitch.config.skins.messageColors[math.random(#twitch.config.skins.messageColors)]
+        local color = twitch.config.skins.messageColors[_nextChatColorIndex]
         
-        userSkin.skinData.states.released[2].text.color =  color
-        
+        userSkin.skinData.states.released[2].text.color =  color        
         typesMessage.users[user] = userSkin
+        _nextChatColorIndex += 1 
 
-        twitch.log("User "..user.." gets color r:"..color.r.." g:"..color.g.." b:"..color.b)
+        if _nextChatColorIndex > table.getn(twitch.config.skins.messageColors) then
+            _nextChatColorIndex = 1 
+        end
     end
 
     return typesMessage.users[user]
