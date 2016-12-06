@@ -14,6 +14,7 @@ Twitch2DCS was primarily created so that DCS World streamers who played in VR co
 ### Installation
 
 _Upgrade_
+
 1.  Extract the contents of Twitch2DCS.v0.0.2-alpha - Upgrade.zip to your Saved Games DCS folder
  (C:\Users\ _username_ \Saved Games\DCS)
 5. Launch DCS and enjoy communicating with Twitch from ingame.
