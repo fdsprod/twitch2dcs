@@ -20,6 +20,7 @@ _Upgrade_
 5. Launch DCS and enjoy communicating with Twitch from ingame.
 
 _New Installs_
+
 1.  Extract the contents of Twitch2DCS.v0.0.2-alpha - New Installation.zip to your Saved Games DCS folder
  (C:\Users\ _username_ \Saved Games\DCS)
 2. Open the file Twitch2DCSConfig.lua in the Config folder with your favorite text editor.
