@@ -3,7 +3,7 @@ local base = _G
 package.path  = package.path..";.\\LuaSocket\\?.lua;"..'.\\Scripts\\?.lua;'.. '.\\Scripts\\UI\\?.lua;'
 package.cpath = package.cpath..";.\\LuaSocket\\?.dll;"
 
-module("twitch_chat")
+module("Twitch2DCS")
 
 local require           = base.require
 local os 			    = base.os
