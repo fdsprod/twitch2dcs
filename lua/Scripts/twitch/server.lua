@@ -15,7 +15,8 @@ local socket        = require("socket")
 local tracer        = require("twitch.tracer")
 
 local Server = {
-    commandHandlers = {}
+    commandHandlers = {},
+    isConnected = false
 }
 
 function Server:new(hostAddress, port)
@@ -46,6 +47,8 @@ function Server:connect(username, oauthToken, caps, timeout)
         self:send("PASS "..oauthToken)
         self:send("NICK "..username)
         self:send("JOIN #"..username)
+
+        self.isConnected = true
     end
 end
 

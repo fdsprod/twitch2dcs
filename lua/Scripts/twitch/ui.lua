@@ -23,93 +23,82 @@ local ListBoxItem   = require('ListBoxItem')
 local Tools 		= require('tools')
 local MulChat 		= require('mul_chat')
 
-local UI = {
-    _isWindowCreated = false,
-    _currentWheelValue = 0,
-    _listStatics = {},
-    _listMessages = {},
-    _nextChatColorIndex = 1,
-}
-
 local _modes = {     
     hidden = "hidden",
     read = "read",
     write = "write",
 }
 
-local function UI:onChange_vsScroll(self)
+local UI = {
+    _isWindowCreated = false,
+    _currentWheelValue = 0,
+    _listStatics = {},
+    _listMessages = {},
+    _nextChatColorIndex = 1,
+    _currentMode = _modes.read,
+    _x,
+    _y
+}
+
+function UI:onChange_vsScroll(self)
     self._currentWheelValue = self.vsScroll:getValue()
     self:updateListM()
 end
 
-function twitch.addMessage(message, name, skin)        
+function UI:addMessage(message, skin)
+    self.testStatic:setText(message)
 
-    if twitch.config.useMutiplayerChat then
-        MulChat.addMessage(message, "Twitch-"..name, skin)
-        return
-    end
-    
-    local date = os.date('*t')
-	local dateStr = string.format("%i:%02i:%02i", date.hour, date.min, date.sec)
+    local newW, newH = self.testStatic:calcSize()       
+    local msg = {message = message, skin = skin, height = newH}
 
-    local name = name
-    if name ~= "" or skin ~= typesMessage.joinPart then
-        name = name..": "
-    end
-    
-    local fullMessage = "["..dateStr.."] "..name..message
-    testStatic:setText(fullMessage)
-    local newW, newH = testStatic:calcSize()   
-    
-    local msg = {message = fullMessage, skin = skin, height = newH}
-    table.insert(_listMessages, msg)
+    table.insert(self._listMessages, msg)
         
-    local minR, maxR = vsScroll:getRange()
+    local minR, maxR = self.vsScroll:getRange()
     
-    if ((_currentWheelValue+1) >= maxR) then
-        vsScroll:setRange(1,#_listMessages)
-        vsScroll:setThumbValue(1)
-        vsScroll:setValue(#_listMessages)
-        _currentWheelValue = #_listMessages
+    if ((self._currentWheelValue+1) >= maxR) then
+        self.vsScroll:setRange(1,#self._listMessages)
+        self.vsScroll:setThumbValue(1)
+        self.vsScroll:setValue(#self._listMessages)
+        self._currentWheelValue = #self._listMessages
     else    
-        vsScroll:setRange(1,#_listMessages)
-        vsScroll:setThumbValue(1)
+        self.vsScroll:setRange(1,#self._listMessages)
+        self.vsScroll:setThumbValue(1)
     end   
     
-    twitch.updateListM()
+    self:updateListM()
 end
 
-function twitch.onMouseWheel_eMessage(self, x, y, clicks)
-    _currentWheelValue = _currentWheelValue - clicks*0.1
+function UI:onMouseWheel_eMessage(self, x, y, clicks)
+    self._currentWheelValue = self._currentWheelValue - clicks*0.1
 
-    if _currentWheelValue < 0 then
-        _currentWheelValue = 0
+    if self._currentWheelValue < 0 then
+        self._currentWheelValue = 0
     end
 
-    if _currentWheelValue > #_listMessages-1 then
-        _currentWheelValue = #_listMessages-1
+    if self._currentWheelValue > #self._listMessages-1 then
+        self._currentWheelValue = #self._listMessages-1
     end
     
-    vsScroll:setValue(_currentWheelValue)
-    twitch.updateListM()
+    self.vsScroll:setValue(self._currentWheelValue)
+    self:updateListM()
 end
 
-function twitch.updateListM()
-    for k,v in pairs(_listStatics) do
+function UI:updateListM()
+    for k,v in pairs(self._listStatics) do
         v:setText("")    
     end
    
     local offset = 0
-    local curMsg = vsScroll:getValue() + vsScroll:getThumbValue()  --#_listMessages
+    local curMsg = self.vsScroll:getValue() + self.vsScroll:getThumbValue()  --#_listMessages
     local curStatic = 1
     local num = 0    
 
-    if _listMessages[curMsg] then          
-        while curMsg > 0 and heightChat > (offset + _listMessages[curMsg].height) do
-            local msg = _listMessages[curMsg]
-            _listStatics[curStatic]:setSkin(msg.skin)                                 
-            _listStatics[curStatic]:setBounds(0,heightChat-offset-msg.height,widthChat,msg.height) 
-            _listStatics[curStatic]:setText(msg.message)            
+    if self._listMessages[curMsg] then          
+        while curMsg > 0 and heightChat > (offset + self._listMessages[curMsg].height) do
+            local msg = self._listMessages[curMsg]
+            self._listStatics[curStatic]:setSkin(msg.skin)                                 
+            self._listStatics[curStatic]:setBounds(0,heightChat-offset-msg.height,widthChat,msg.height) 
+            self._listStatics[curStatic]:setText(msg.message)            
             offset = offset + msg.height
             curMsg = curMsg - 1
             curStatic = curStatic + 1
@@ -118,23 +107,43 @@ function twitch.updateListM()
     end    
 end
 
-function UI:new()
+--[[
+{
+    onUISendMessage({message})
+    onUIModeChanged({mode})
+    onUIPositionChanged({x,y})
+}
+]]--
+
+function UI:setCallbacks(callbacks)
+    self.callbacks = callbacks
+end
+
+function UI:onCallback(callback, args)
+    if self.callbacks then
+        self.callbacks[callback](args)
+    end
+end
+
+function UI:new(hotkey, defaultMode, x, y)
     local self = {}
       
     setmetatable(self, UI)
 
     self.__index = self            
     self.window = DialogLoader.spawnDialogFromFile(lfs.writedir() .. 'Scripts\\dialogs\\twitch_chat.dlg', cdata)
-    self.box         = self.window.Box
-    self.pDown       = self.box.pDown
-    self.eMessage    = self.pDown.eMessage
-    self.pMsg        = self.box.pMsg
-    self.vsScroll    = self.box.vsScroll
+    self.box = self.window.Box
+    self.pDown = self.box.pDown
+    self.eMessage = self.pDown.eMessage
+    self.pMsg = self.box.pMsg
+    self.vsScroll = self.box.vsScroll
+    self._x = x
+    self._y = y
 
     self.vsScroll.onChange = self:onChange_vsScroll
     self.eMessage.onChange = self:onChange_eMessage    
     
-    self.window:addHotKeyCallback(config:get("hotkey"), self:onHotkey)
+    self.window:addHotKeyCallback(hotkey, self:nextMode)
     self.pMsg:addMouseWheelCallback(self:onMouseWheel_eMessage)
     
     self.vsScroll:setRange(1,1)
@@ -149,9 +158,6 @@ function UI:new()
     self.skinModeRead = self.pNoVisible.pModeRead:getSkin()
             
     self.eMx, self.eMy, self.eMw = self.eMessage:getBounds()
-
-    self.typesMessage.user.skinData.states.released[2].text.color = twitch.config.skins.selfColor
-    self.typesMessage.joinPart.skinData.states.released[2].text.color = twitch.config.skins.joinPartColor
 
     local testSkin = self.skinFactory:getSkin()
 
@@ -175,15 +181,14 @@ function UI:new()
     
     function eMessage:onKeyDown(key, unicode) 
         if 'return' == key then          
-            local text = eMessage:getText()            
+            local text = self.eMessage:getText()            
             if text ~= "\n" and text ~= nil then
                 text = string.sub(text, 1, (string.find(text, '%s+$') or 0) - 1)
-                 twitch.send("PRIVMSG #"..twitch.config.username.." :"..text)
-                 twitch.addMessage(text, twitch.config.username, typesMessage.user)
+                self:onCallback("onUISendMessage", {message = message})
             end
-            eMessage:setText("")
-            eMessage:setSelectionNew(0,0,0,0)
-            twitch.resizeEditMessage()
+            self.eMessage:setText("")
+            self.eMessage:setSelectionNew(0,0,0,0)
+            self:resizeEditMessage()
         end
     end
 	
@@ -198,122 +203,118 @@ function UI:new()
     self:resize(self.w, self.h)
     self:resizeEditMessage()
     
-    self:setMode(twitch.config.mode)    
+    if defaultMode == _modes.hidden then
+        self:readMode()
+    else if defaultMode == _modes.read then
+        self:writeMode()
+    else
+        self:hiddenMode()
+    end  
     
     self.window:addPositionCallback(twitch.positionCallback)     
     self:positionCallback()
 
     self._isWindowCreated = true
 
-    tracer.log("Window created")
+    tracer.default:info("Window created")
+
+    self:setVisible(true)
 
     return self
 end
 
-function twitch.setVisible(b)
-    window:setVisible(b)
+function UI:setVisible(b)
+    self.window:setVisible(b)
 end
 
-function twitch.setMode(mode)
-    twitch.log("setMode called "..mode)
-    twitch.config.mode = mode 
-    
-    if window == nil then
-        return
-    end
-    
-    if twitch.config.mode == _modes.hidden then
-        box:setVisible(false)
-        twitch.setVisible(false)
-        vsScroll:setVisible(false)
-        pDown:setVisible(false)
-        eMessage:setFocused(false)
-        DCS.banKeyboard(false)
-    else
-        box:setVisible(true)
-        twitch.setVisible(true)
-        window:setSize(360, 455)
-
-        if twitch.config.mode == _modes.read then
-            box:setSkin(skinModeRead)
-            vsScroll:setVisible(false)
-            pDown:setVisible(false)
-            eMessage:setFocused(false)
-            DCS.banKeyboard(false)
-            window:setSkin(Skin.windowSkinChatMin())
-        end
-        
-        if twitch.config.mode == _modes.write then
-            box:setSkin(skinModeWrite)
-            vsScroll:setVisible(true)
-            pDown:setVisible(true)        
-            DCS.banKeyboard(true)
-            window:setSkin(Skin.windowSkinChatWrite())		
-            eMessage:setFocused(true)
-        end    
-    end
+function UI:hiddenMode()
+    self:onCallback("onUIModeChanged", {mode=_modes.hidden})
+    self.box:setVisible(false)
+    self.twitch.setVisible(false)
+    self.vsScroll:setVisible(false)
+    self.pDown:setVisible(false)
+    self.eMessage:setFocused(false)
+    self.DCS.banKeyboard(false)
 
     twitch.updateListM()
     twitch.saveConfiguration()
 end
 
-function twitch.getMode()
-    return twitch.config.mode
+function UI:writeMode()
+    self:onCallback("onUIModeChanged", {mode=_modes.write})
+    self.box:setVisible(true)
+    self:setVisible(true)
+    self.window:setSize(360, 455)
+    self.box:setSkin(self.skinModeWrite)
+    self.vsScroll:setVisible(true)
+    self.pDown:setVisible(true)     
+    self.window:setSkin(Skin.windowSkinChatWrite())		
+    self.eMessage:setFocused(true)
+        
+    DCS.banKeyboard(true)
+
+    self:updateListM()
+    self:saveConfiguration()
 end
 
-function twitch.onHotkey()
-    if (twitch.getMode() == _modes.write) then
-        twitch.setMode(_modes.read)
-    --elseif (twitch.getMode() == _modes.read) then
-       -- twitch.setMode(_modes.hidden)
+function UI:readMode()
+    self:onCallback("onUIModeChanged", {mode=_modes.read})
+    self.box:setVisible(true)
+    self:setVisible(true)
+    self.window:setSize(360, 455)
+    self.box:setSkin(self.skinModeRead)
+    self.vsScroll:setVisible(false)
+    self.pDown:setVisible(false)
+    self.eMessage:setFocused(false)
+    self.window:setSkin(Skin.windowSkinChatMin())
+
+    DCS.banKeyboard(false)
+
+    self:updateListM()
+    self:saveConfiguration()
+end
+
+function UI:nextMode()
+    if mode == _modes.hidden then
+        self:readMode()
+    else if mode == _modes.read then
+        self:writeMode()
     else
-        twitch.setMode(_modes.write)            
-    end 
-end
-
-function twitch.resize(w, h)
-    window:setBounds(twitch.config.windowPosition.x, twitch.config.windowPosition.y, 360, 455)    
-    box:setBounds(0, 0, 360, 400)
-end
-
-function twitch.positionCallback()
-    local x, y = window:getPosition()
-
-    x = math.max(math.min(x, w-360), 0)
-    y = math.max(math.min(y, h-400), 0)
-    
-    window:setPosition(x, y)
-
-    twitch.config.windowPosition = { x = x, y = y }
-    twitch.saveConfiguration()
-end
-
-function twitch.resizeEditMessage()
-    local text = eMessage:getText()
-    
-    testE:setText(text)
-    local newW, newH = testE:calcSize()  
-
-    eMessage:setBounds(eMx,eMy,eMw,newH)
-    
-    local x,y,w,h = box:getBounds()
-    box:setBounds(x,0,w,eMy+newH+317)
-    
-    local x,y,w,h = pDown:getBounds()
-    pDown:setBounds(x,y,w,eMy+newH+117)
-    
-    local x,y,w,h = window:getBounds()
-    window:setSize(w,eMy+newH+317+55)
-end
-
-function twitch.show(b)
-    if _isWindowCreated == false then
-        twitch.createWindow()
+        self:hiddenMode()
     end
-    
-    if b == false then
-        twitch.saveConfiguration()
-    end
-    
-    twitch.setVisible(b)
 end
+
+function UI:resize(w, h)
+    self.window:setBounds(self._x, self._y, 360, 455)    
+    self.box:setBounds(0, 0, 360, 400)
+end
+
+function UI:positionCallback()
+    local x, y = self.window:getPosition()
+
+    self._x = x = math.max(math.min(x, w-360), 0)
+    self._y = y = math.max(math.min(y, h-400), 0)
+    
+    self.window:setPosition(x, y)
+    self:onCallback("onUIPositionChanged", {x = x, y = y})
+end
+
+function UI:resizeEditMessage()
+    local text = self.eMessage:getText()
+    
+    self.testE:setText(text)
+    local newW, newH = self.testE:calcSize()  
+
+    self.eMessage:setBounds(self.Mx,self.eMy,self.eMw,newH)
+    
+    local x,y,w,h = self.box:getBounds()
+    self.box:setBounds(x,0,w,self.eMy+newH+317)
+    
+    local x,y,w,h = self.pDown:getBounds()
+    self.pDown:setBounds(x,y,w,self.eMy+newH+117)
+    
+    local x,y,w,h = self.window:getBounds()
+    self.window:setSize(w,self.eMy+newH+317+55)
+end
+
+return UI
