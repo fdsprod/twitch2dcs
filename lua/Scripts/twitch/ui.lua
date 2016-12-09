@@ -22,6 +22,7 @@ local ListBoxItem   = require('ListBoxItem')
 local Tools 		= require('tools')
 local MulChat 		= require('mul_chat')
 local tracer        = require("twitch.tracer")
+local utils 			    = require('twitch.utils')
 
 local modes = {
     hidden = "hidden",
@@ -83,6 +84,10 @@ function UI:onMouseWheel_eMessage(x, y, clicks)
     
     self.vsScroll:setValue(self._currentWheelValue)
     self:updateListM()
+end
+
+function UI:setTitle(title)
+    self.window:setText(title)
 end
 
 function UI:updateListM()
@@ -229,14 +234,18 @@ end
 function UI:writeMode()
     self._currentMode = modes.write
     tracer:info("Setting UI to write mode")
+
     self:onCallback("onUIModeChanged", {mode=modes.write})
-    self.box:setVisible(true)
     self:setVisible(true)
-    self.window:setSize(360, 455)
+
+    self.box:setVisible(true)
     self.box:setSkin(self.skinModeWrite)
+
+    self.window:setSize(360, 455)
+    self.window:setSkin(Skin.windowSkinChatWrite())	
+
     self.vsScroll:setVisible(true)
     self.pDown:setVisible(true)     
-    self.window:setSkin(Skin.windowSkinChatWrite())		
     self.eMessage:setFocused(true)
         
     DCS.banKeyboard(true)
@@ -247,15 +256,25 @@ end
 function UI:readMode()
     self._currentMode = modes.read
     tracer:info("Setting UI to read mode")
+    
     self:onCallback("onUIModeChanged", {mode=modes.read})
-    self.box:setVisible(true)
     self:setVisible(true)
-    self.window:setSize(360, 455)
+
+    self.box:setVisible(true)
     self.box:setSkin(self.skinModeRead)
+
+    local skin = Skin.windowSkinTransparent()
+
+    skin.skinData.skins.header.skinData.states.disabled[1].bkg.center_center.a = 0
+    skin.skinData.skins.header.skinData.states.released[1].bkg.center_center.a = 0
+    skin.skinData.skins.header.skinData.states.released[2].bkg.center_center.a = 0
+
+    self.window:setSize(360, 455)
+    self.window:setSkin(skin)
+
     self.vsScroll:setVisible(false)
     self.pDown:setVisible(false)
     self.eMessage:setFocused(false)
-    self.window:setSkin(Skin.windowSkinChatMin())
 
     DCS.banKeyboard(false)
 

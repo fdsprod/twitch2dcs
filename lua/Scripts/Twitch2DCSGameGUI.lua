@@ -30,7 +30,8 @@ local TwitchClient = {
     ui = nil,
     joinPartSkin = nil,
     userSkins = {},
-    nextUserIndex = 1
+    nextUserIndex = 1,
+    viewerCount = 0
 }
 local TwitchClient_mt = { __index = TwitchClient }
 local client = nil
@@ -42,7 +43,6 @@ function TwitchClient:new()
     self.server = Server:new(self.config.hostAddress, self.config.port)
     self.ui = UI:new(self.config.hotkey, self.config.mode, self.config.windowPosition.x, self.config.windowPosition.y)
     self.joinPartSkin = self.ui.skinFactory:getSkin()
-
     self.joinPartSkin.skinData.states.released[2].text.color =  self.config.skins.joinPartColor
 
     if self.config.username ~= nil and self.config.username ~= "" then
@@ -108,15 +108,22 @@ end
 
 function TwitchClient.onUserPart(cmd)
     client.ui:addMessage(client:getTimeStamp().." "..cmd.user.." left.", client.joinPartSkin)
+    client.viewerCount = client.viewerCount - 1
 end
 
 function TwitchClient.onUserJoin(cmd)
     client.ui:addMessage(client:getTimeStamp().." "..cmd.user.." joined.", client.joinPartSkin)
+    client.viewerCount = client.viewerCount + 1
+    client:updateTitle()
 end
 
 function TwitchClient.onUserMessage(cmd)
     local skin = client:getSkinForUser(cmd.user)
     client.ui:addMessage(client:getTimeStamp().." "..cmd.user..": "..cmd.param2, skin)
+end
+
+function TwitchClient:updateTitle()
+    client.ui:setTitle("Twitch Chat | "..client.viewerCount.." viewers")
 end
 
 function TwitchClient:connect() 

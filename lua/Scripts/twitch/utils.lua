@@ -7,66 +7,77 @@ local table             = base.table
 local string            = base.string
 local pairs         	= base.pairs
 local tostring         	= base.tostring
+local tonumber         	= base.tonumber
 
 module("twitch.utils")
 
-function table_print (tt, indent, done)
-  done = done or {}
-  indent = indent or 0
-  if type(tt) == "table" then
-    local sb = {}
-    for key, value in pairs (tt) do
-      table.insert(sb, string.rep (" ", indent)) -- indent it
-      if type (value) == "table" and not done [value] then
-        done [value] = true
-        table.insert(sb, "{\n");
-        table.insert(sb, table_print (value, indent + 2, done))
-        table.insert(sb, string.rep (" ", indent)) -- indent it
-        table.insert(sb, "}\n");
-      elseif "number" == type(key) then
-        table.insert(sb, string.format("\"%s\"\n", tostring(value)))
-      else
-        table.insert(sb, string.format(
-            "%s = \"%s\"\n", tostring (key), tostring(value)))
-       end
-    end
-    return table.concat(sb)
-  else
-    return tt .. "\n"
-  end
-end
-
-function to_string( tbl )
-    if  "nil"       == type( tbl ) then
-        return tostring(nil)
-    elseif  "table" == type( tbl ) then
-        return table_print(tbl)
-    elseif  "string" == type( tbl ) then
-        return tbl
-    else
-        return tostring(tbl)
-    end
-end
-
---from http://lua-users.org/wiki/CopyTable
-function deepCopy(object)
-
-	local lookup_table = {}
-	local function _copy(object)
-		if type(object) ~= "table" then
-			return object
-		elseif lookup_table[object] then
-			return lookup_table[object]
-		end
-		local new_table = {}
-		lookup_table[object] = new_table
-		for index, value in pairs(object) do
-			new_table[_copy(index)] = _copy(value)
-		end
-		return base.setmetatable(new_table, getmetatable(object))
+function IsSequential( t )
+	local i = 1
+	for key, value in pairs( t ) do
+		if ( not tonumber( i ) or key ~= i ) then return false end
+		i = i + 1
 	end
-	local objectreturn = _copy(object)
-	return objectreturn
+	return true
+end
+
+local function MakeTable( t, nice, indent, done )
+	local str = ""
+	local done = done or {}
+	local indent = indent or 0
+	local idt = ""
+	if nice then idt = string.rep( "\t", indent ) end
+	local nl, tab  = "", ""
+	if ( nice ) then nl, tab = "\n", "\t" end
+
+	local sequential = IsSequential( t )
+
+	for key, value in pairs( t ) do
+
+		str = str .. idt .. tab .. tab
+
+		if not sequential then
+			if type( key ) == "number" or type( key ) == "boolean" then 
+				key = "[" .. tostring( key ) .. "]" .. tab .. "="
+			else
+				key = tostring( key ) .. tab .. "="
+			end
+		else
+			key = ""
+		end
+
+		if ( type(value) == "table" and not done[ value ] ) then
+
+			done [ value ] = true
+			str = str .. key .. tab .. "{" .. nl .. MakeTable( value, nice, indent + 1, done )
+			str = str .. idt .. tab .. tab .. tab .. tab .."},".. nl
+
+		else
+		
+			if ( type( value ) == "string" ) then 
+				value = '"' .. tostring( value ) .. '"'
+			elseif ( type( value ) == "Vector" ) then
+				value = "Vector(" .. value.x .. "," .. value.y .. "," .. value.z .. ")"
+			elseif ( type( value ) == "Angle" ) then
+				value = "Angle(" .. value.pitch .. "," .. value.yaw .. "," .. value.roll .. ")"
+			else
+				value = tostring( value )
+			end
+		
+			str = str .. key .. tab .. value .. "," .. nl
+
+		end
+
+	end
+	return str
+end
+
+function ToString( t, n, nice )
+	local nl, tab  = "", ""
+	if ( nice ) then nl, tab = "\n", "\t" end
+
+	local str = ""
+	if ( n ) then str = n .. tab .. "=" .. tab end
+	return str .. "{" .. nl .. MakeTable( t, nice ) .. "}"
 end
 
 -- porting in Slmod's serialize_slmod2
