@@ -1,7 +1,6 @@
 local base = _G
 
-package.path  = package.path..";.\\LuaSocket\\?.lua;"..'.\\Scripts\\?.lua;'.. '.\\Scripts\\UI\\?.lua;'
-package.cpath = package.cpath..";.\\LuaSocket\\?.dll;"
+module("twitch.config")
 
 local require       = base.require
 local table         = base.table
@@ -13,13 +12,14 @@ local ipairs        = base.ipairs
 
 local tools 		= require('tools')
 local lfs 			= require('lfs')
-local U                 = require('me_utilities')
+local U             = require('me_utilities')
 local tracer        = require("twitch.tracer")
 
 local Config = {
     version = 1,
     username = "",
     oathToken = "",
+    debugMode = false,
     caps = {
         "twitch.tv/membership",
     },
@@ -28,7 +28,7 @@ local Config = {
     mode = "write",
     hotkey = "Ctrl+Shift+escape",
     timeout = 0,
-    windowPosition = { x = 66, y = 13 }
+    windowPosition = { x = 66, y = 13 },
     useMutiplayerChat = false,
     skins = {
         joinPartColor = 
@@ -122,38 +122,21 @@ local Config = {
         }
     }
 }
+local Config_mt = { __index = Config }
 
 function Config:new(file)
-    local self = {}
-      
-    setmetatable(self, Config)
-
-    self.__index = self        
-    
-    tracer.defualt:info("Loading config file...")
-
+    local config = base.setmetatable({}, Config_mt)
     local tbl = tools.safeDoFile(lfs.writedir() .. 'Config/Twitch2DCSConfig.lua', false)
     
     if (tbl and tbl.config) then
-        tracer.defualt:info("Configuration exists...")
-
         for k,v in pairs(tbl.config) do
-            self[k] = v 
+            config[k] = v 
         end
     else
-        tracer.defualt:info("Configuration not found, using defaults...")
+        tracer:info("Configuration not found, using defaults...")
     end    
 
-    return self 
-end
-
-function Config:get(key, default)
-    return (self[key] or default)
-end
-
-function Config:set(key, value)
-    self[key] = value
-    self:save()
+    return config 
 end
 
 function Config:save()

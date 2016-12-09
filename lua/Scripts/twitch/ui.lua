@@ -1,7 +1,6 @@
 local base = _G
 
-package.path  = package.path..";.\\LuaSocket\\?.lua;"..'.\\Scripts\\?.lua;'.. '.\\Scripts\\UI\\?.lua;'
-package.cpath = package.cpath..";.\\LuaSocket\\?.dll;"
+module("twitch.ui")
 
 local require       = base.require
 local table         = base.table
@@ -11,7 +10,7 @@ local assert        = base.assert
 local pairs         = base.pairs
 local ipairs        = base.ipairs
 
-local tracer        = require("twitch.tracer")
+local lfs           = require('lfs')
 local net           = require('net')
 local DCS           = require("DCS") 
 local U             = require('me_utilities')
@@ -22,8 +21,9 @@ local EditBox       = require('EditBox')
 local ListBoxItem   = require('ListBoxItem')
 local Tools 		= require('tools')
 local MulChat 		= require('mul_chat')
+local tracer        = require("twitch.tracer")
 
-local _modes = {     
+local modes = {
     hidden = "hidden",
     read = "read",
     write = "write",
@@ -35,10 +35,12 @@ local UI = {
     _listStatics = {},
     _listMessages = {},
     _nextChatColorIndex = 1,
-    _currentMode = _modes.read,
+    _currentMode = modes.read,
     _x,
-    _y
+    _y,
+    modes = modes
 }
+local UI_mt = { __index = UI }
 
 function UI:onChange_vsScroll(self)
     self._currentWheelValue = self.vsScroll:getValue()
@@ -68,7 +70,7 @@ function UI:addMessage(message, skin)
     self:updateListM()
 end
 
-function UI:onMouseWheel_eMessage(self, x, y, clicks)
+function UI:onMouseWheel_eMessage(x, y, clicks)
     self._currentWheelValue = self._currentWheelValue - clicks*0.1
 
     if self._currentWheelValue < 0 then
@@ -94,10 +96,10 @@ function UI:updateListM()
     local num = 0    
 
     if self._listMessages[curMsg] then          
-        while curMsg > 0 and heightChat > (offset + self._listMessages[curMsg].height) do
+        while curMsg > 0 and self.heightChat > (offset + self._listMessages[curMsg].height) do
             local msg = self._listMessages[curMsg]
             self._listStatics[curStatic]:setSkin(msg.skin)                                 
-            self._listStatics[curStatic]:setBounds(0,heightChat-offset-msg.height,widthChat,msg.height) 
+            self._listStatics[curStatic]:setBounds(0,self.heightChat-offset-msg.height,self.widthChat,msg.height) 
             self._listStatics[curStatic]:setText(msg.message)            
             offset = offset + msg.height
             curMsg = curMsg - 1
@@ -126,122 +128,108 @@ function UI:onCallback(callback, args)
 end
 
 function UI:new(hotkey, defaultMode, x, y)
-    local self = {}
-      
-    setmetatable(self, UI)
+    local ui = base.setmetatable({}, UI_mt)
+    
+    ui._currentMode = defaultMode
+    ui.window = DialogLoader.spawnDialogFromFile(lfs.writedir() .. 'Scripts\\dialogs\\twitch_chat.dlg', cdata)
+    ui.box = ui.window.Box
+    ui.pNoVisible = ui.window.pNoVisible
+    ui.pDown = ui.box.pDown
+    ui.eMessage = ui.pDown.eMessage
+    ui.pMsg = ui.box.pMsg
+    ui.vsScroll = ui.box.vsScroll
+    ui._x = x
+    ui._y = y
 
-    self.__index = self            
-    self.window = DialogLoader.spawnDialogFromFile(lfs.writedir() .. 'Scripts\\dialogs\\twitch_chat.dlg', cdata)
-    self.box = self.window.Box
-    self.pDown = self.box.pDown
-    self.eMessage = self.pDown.eMessage
-    self.pMsg = self.box.pMsg
-    self.vsScroll = self.box.vsScroll
-    self._x = x
-    self._y = y
+    ui.vsScroll.onChange = ui.onChange_vsScroll
+    ui.eMessage.onChange = ui.onChange_eMessage    
+    
+    ui.window:addHotKeyCallback(hotkey, function() ui:nextMode() end)
+    ui.pMsg:addMouseWheelCallback(function(self, x, y, clicks) ui:onMouseWheel_eMessage(x, y, clicks) end)
+    
+    ui.vsScroll:setRange(1,1)
+    ui.vsScroll:setValue(1)
 
-    self.vsScroll.onChange = self:onChange_vsScroll
-    self.eMessage.onChange = self:onChange_eMessage    
+    ui._currentWheelValue = 1
     
-    self.window:addHotKeyCallback(hotkey, self:nextMode)
-    self.pMsg:addMouseWheelCallback(self:onMouseWheel_eMessage)
+    ui.widthChat, ui.heightChat = ui.pMsg:getSize()
     
-    self.vsScroll:setRange(1,1)
-    self.vsScroll:setValue(1)
-
-    self._currentWheelValue = 1
-    
-    self.widthChat, self.heightChat = self.pMsg:getSize()
-    
-    self.skinFactory = self.window.pNoVisible.eWhiteText;
-    self.skinModeWrite = self.pNoVisible.pModeWrite:getSkin()
-    self.skinModeRead = self.pNoVisible.pModeRead:getSkin()
+    ui.skinFactory = ui.window.pNoVisible.eWhiteText;
+    ui.skinModeWrite = ui.pNoVisible.pModeWrite:getSkin()
+    ui.skinModeRead = ui.pNoVisible.pModeRead:getSkin()
             
-    self.eMx, self.eMy, self.eMw = self.eMessage:getBounds()
+    ui.eMx, ui.eMy, ui.eMw = ui.eMessage:getBounds()
 
-    local testSkin = self.skinFactory:getSkin()
+    local testSkin = ui.skinFactory:getSkin()
 
-    self.testStatic = EditBox.new()
-    self.testStatic:setSkin(testSkin)
-    self.testStatic:setReadOnly(true)   
-    self.testStatic:setTextWrapping(true)  
-    self.testStatic:setMultiline(true) 
-    self.testStatic:setBounds(0,0,self.widthChat,20)
+    ui.testStatic = EditBox.new()
+    ui.testStatic:setSkin(testSkin)
+    ui.testStatic:setReadOnly(true)   
+    ui.testStatic:setTextWrapping(true)  
+    ui.testStatic:setMultiline(true) 
+    ui.testStatic:setBounds(0,0,ui.widthChat,20)
     
-    self._listStatics = {}
+    ui._listStatics = {}
     
     for i = 1, 20 do
         local staticNew = EditBox.new()        
-        table.insert(self._listStatics, staticNew)
+        table.insert(ui._listStatics, staticNew)
         staticNew:setReadOnly(true)   
         staticNew:setTextWrapping(true)  
         staticNew:setMultiline(true) 
-        self.pMsg:insertWidget(staticNew)
+        ui.pMsg:insertWidget(staticNew)
     end
     
-    function eMessage:onKeyDown(key, unicode) 
+    function ui.eMessage:onKeyDown(key, unicode) 
         if 'return' == key then          
-            local text = self.eMessage:getText()            
+            local text = ui.eMessage:getText()            
             if text ~= "\n" and text ~= nil then
                 text = string.sub(text, 1, (string.find(text, '%s+$') or 0) - 1)
-                self:onCallback("onUISendMessage", {message = message})
+                ui:onCallback("onUISendMessage", {message = text})
             end
-            self.eMessage:setText("")
-            self.eMessage:setSelectionNew(0,0,0,0)
-            self:resizeEditMessage()
+            ui.eMessage:setText("")
+            ui.eMessage:setSelectionNew(0,0,0,0)
+            ui:resizeEditMessage()
         end
     end
 	
-    self.testE = EditBox.new()    
-    self.testE:setTextWrapping(true)  
-    self.testE:setMultiline(true)  
-    self.testE:setBounds(0,0,self.eMw,20)
-    self.testE:setSkin(self.eMessage:getSkin())	
+    ui.testE = EditBox.new()    
+    ui.testE:setTextWrapping(true)  
+    ui.testE:setMultiline(true)  
+    ui.testE:setBounds(0,0,ui.eMw,20)
+    ui.testE:setSkin(ui.eMessage:getSkin())	
 
-    self.w, self.h = Gui.GetWindowSize()
+    ui.w, ui.h = Gui.GetWindowSize()
             
-    self:resize(self.w, self.h)
-    self:resizeEditMessage()
+    ui:resize(ui.w, ui.h)
+    ui:resizeEditMessage()
     
-    if defaultMode == _modes.hidden then
-        self:readMode()
-    else if defaultMode == _modes.read then
-        self:writeMode()
+    if ui._currentMode == ui.modes.write then
+        ui:readMode()
     else
-        self:hiddenMode()
-    end  
+        ui:writeMode()
+    end
     
-    self.window:addPositionCallback(twitch.positionCallback)     
-    self:positionCallback()
+    ui.window:addPositionCallback(function() ui:positionCallback() end)     
+    ui:positionCallback()
 
-    self._isWindowCreated = true
+    ui._isWindowCreated = true
 
-    tracer.default:info("Window created")
+    tracer:info("Window created")
 
-    self:setVisible(true)
+    ui:setVisible(true)
 
-    return self
+    return ui
 end
 
 function UI:setVisible(b)
     self.window:setVisible(b)
 end
 
-function UI:hiddenMode()
-    self:onCallback("onUIModeChanged", {mode=_modes.hidden})
-    self.box:setVisible(false)
-    self.twitch.setVisible(false)
-    self.vsScroll:setVisible(false)
-    self.pDown:setVisible(false)
-    self.eMessage:setFocused(false)
-    self.DCS.banKeyboard(false)
-
-    twitch.updateListM()
-    twitch.saveConfiguration()
-end
-
 function UI:writeMode()
-    self:onCallback("onUIModeChanged", {mode=_modes.write})
+    self._currentMode = modes.write
+    tracer:info("Setting UI to write mode")
+    self:onCallback("onUIModeChanged", {mode=modes.write})
     self.box:setVisible(true)
     self:setVisible(true)
     self.window:setSize(360, 455)
@@ -254,11 +242,12 @@ function UI:writeMode()
     DCS.banKeyboard(true)
 
     self:updateListM()
-    self:saveConfiguration()
 end
 
 function UI:readMode()
-    self:onCallback("onUIModeChanged", {mode=_modes.read})
+    self._currentMode = modes.read
+    tracer:info("Setting UI to read mode")
+    self:onCallback("onUIModeChanged", {mode=modes.read})
     self.box:setVisible(true)
     self:setVisible(true)
     self.window:setSize(360, 455)
@@ -271,16 +260,13 @@ function UI:readMode()
     DCS.banKeyboard(false)
 
     self:updateListM()
-    self:saveConfiguration()
 end
 
 function UI:nextMode()
-    if mode == _modes.hidden then
+    if self._currentMode == modes.write then
         self:readMode()
-    else if mode == _modes.read then
-        self:writeMode()
     else
-        self:hiddenMode()
+        self:writeMode()
     end
 end
 
@@ -292,9 +278,12 @@ end
 function UI:positionCallback()
     local x, y = self.window:getPosition()
 
-    self._x = x = math.max(math.min(x, w-360), 0)
-    self._y = y = math.max(math.min(y, h-400), 0)
-    
+    x = math.max(math.min(x, self.w-360), 0)
+    y = math.max(math.min(y, self.h-400), 0)
+
+    self._x = x
+    self._y = y
+
     self.window:setPosition(x, y)
     self:onCallback("onUIPositionChanged", {x = x, y = y})
 end

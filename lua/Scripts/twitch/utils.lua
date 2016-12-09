@@ -1,8 +1,52 @@
 --Some code below from https://github.com/FlightControl-Master/MOOSE/blob/master/Moose%20Development/Moose/Routines.lua
 
-local base = _G
+local base				= _G
 
-module("TwitchUtils")
+local type 				= base.type
+local table             = base.table
+local string            = base.string
+local pairs         	= base.pairs
+local tostring         	= base.tostring
+
+module("twitch.utils")
+
+function table_print (tt, indent, done)
+  done = done or {}
+  indent = indent or 0
+  if type(tt) == "table" then
+    local sb = {}
+    for key, value in pairs (tt) do
+      table.insert(sb, string.rep (" ", indent)) -- indent it
+      if type (value) == "table" and not done [value] then
+        done [value] = true
+        table.insert(sb, "{\n");
+        table.insert(sb, table_print (value, indent + 2, done))
+        table.insert(sb, string.rep (" ", indent)) -- indent it
+        table.insert(sb, "}\n");
+      elseif "number" == type(key) then
+        table.insert(sb, string.format("\"%s\"\n", tostring(value)))
+      else
+        table.insert(sb, string.format(
+            "%s = \"%s\"\n", tostring (key), tostring(value)))
+       end
+    end
+    return table.concat(sb)
+  else
+    return tt .. "\n"
+  end
+end
+
+function to_string( tbl )
+    if  "nil"       == type( tbl ) then
+        return tostring(nil)
+    elseif  "table" == type( tbl ) then
+        return table_print(tbl)
+    elseif  "string" == type( tbl ) then
+        return tbl
+    else
+        return tostring(tbl)
+    end
+end
 
 --from http://lua-users.org/wiki/CopyTable
 function deepCopy(object)
@@ -19,7 +63,7 @@ function deepCopy(object)
 		for index, value in pairs(object) do
 			new_table[_copy(index)] = _copy(value)
 		end
-		return setmetatable(new_table, getmetatable(object))
+		return base.setmetatable(new_table, getmetatable(object))
 	end
 	local objectreturn = _copy(object)
 	return objectreturn
@@ -52,7 +96,7 @@ function oneLineSerialize(tbl)  -- serialization of a table all on a single line
 					ind_str[#ind_str + 1] = ']='
 				else --must be a string
 					ind_str[#ind_str + 1] = '['
-					ind_str[#ind_str + 1] = routines.utils.basicSerialize(ind)
+					ind_str[#ind_str + 1] = basicSerialize(ind)
 					ind_str[#ind_str + 1] = ']='
 				end
 
@@ -63,7 +107,7 @@ function oneLineSerialize(tbl)  -- serialization of a table all on a single line
 					tbl_str[#tbl_str + 1] = table.concat(ind_str)
 					tbl_str[#tbl_str + 1] = table.concat(val_str)
 			elseif type(val) == 'string' then
-					val_str[#val_str + 1] = routines.utils.basicSerialize(val)
+					val_str[#val_str + 1] = basicSerialize(val)
 					val_str[#val_str + 1] = ','
 					tbl_str[#tbl_str + 1] = table.concat(ind_str)
 					tbl_str[#tbl_str + 1] = table.concat(val_str)
@@ -86,7 +130,7 @@ function oneLineSerialize(tbl)  -- serialization of a table all on a single line
 				--	tbl_str[#tbl_str + 1] = "function " .. tostring(ind)
 				--	tbl_str[#tbl_str + 1] = ','   --I think this is right, I just added it
 				else
---					env.info('unable to serialize value type ' .. routines.utils.basicSerialize(type(val)) .. ' at index ' .. tostring(ind))
+--					env.info('unable to serialize value type ' .. basicSerialize(type(val)) .. ' at index ' .. tostring(ind))
 --					env.info( debug.traceback() )
 				end
 	

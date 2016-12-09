@@ -1,7 +1,6 @@
 local base = _G
 
-package.path  = package.path..";.\\LuaSocket\\?.lua;"..'.\\Scripts\\?.lua;'.. '.\\Scripts\\UI\\?.lua;'
-package.cpath = package.cpath..";.\\LuaSocket\\?.dll;"
+module("twitch.server")
 
 local require       = base.require
 local table         = base.table
@@ -14,32 +13,30 @@ local ipairs        = base.ipairs
 local socket        = require("socket")
 local tracer        = require("twitch.tracer")
 
-local Server = {
+local Server = { 
     commandHandlers = {},
     isConnected = false
 }
+local Server_mt = { __index = Server }
 
 function Server:new(hostAddress, port)
-    local self = {}
-      
-    setmetatable(self, Server)
+    local server = base.setmetatable({}, Server_mt)
+    
+    server.connection = socket.tcp()
+    server.hostAddress = hostAddress
+    server.port = port
 
-    self.__index = self        
-    self.connection = socket.tcp()
-    self.hostAddress = hostAddress
-    self.port = port
-
-    return self 
+    return server 
 end
 
 function Server:connect(username, oauthToken, caps, timeout)
     local ip = socket.dns.toip(self.hostAddress)
-    local success = assert(Server.connection:connect(ip, self.port))
+    local success = assert(self.connection:connect(ip, self.port))
     
     if not success then
-        tracer.default:warn("Unable to connect to "..self.hostAddress.."["..ip.."]:"..self.port)
+        tracer:warn("Unable to connect to "..self.hostAddress.."["..ip.."]:"..self.port)
     else
-        tracer.default:info("Conncted to "..self.hostAddress.."["..ip.."]:"..self.port)
+        tracer:info("Conncted to "..self.hostAddress.."["..ip.."]:"..self.port)
        
         self.connection:settimeout(timeout)  
         
@@ -48,6 +45,7 @@ function Server:connect(username, oauthToken, caps, timeout)
         self:send("NICK "..username)
         self:send("JOIN #"..username)
 
+        self.username = username
         self.isConnected = true
     end
 end
@@ -55,9 +53,9 @@ end
 function Server:send(data)
     local count, err = self.connection:send(data.."\r\n")
     if err then
-        tracer.default:error("DCS -> Twitch: "..err)
+        tracer:error("DCS -> Twitch: "..err)
     else    
-        tracer.default:info("DCS -> Twitch: "..data)
+        tracer:info("DCS -> Twitch: "..data)
     end
 end
 
@@ -66,7 +64,7 @@ function Server:receive()
     repeat
         buffer, err = self.connection:receive("*l")
         if not err then
-            tracer.default:info("DCS <- Twitch: "..buffer)
+            tracer:info("DCS <- Twitch: "..buffer)
             if buffer ~= nil then                 
                 if string.sub(buffer,1,4) == "PING" then
                     self:send(string.gsub(buffer,"PING","PONG",1))
@@ -79,7 +77,7 @@ function Server:receive()
                     local user, userhost = string.match(prefix,"^([^!]+)!(.*)$")
 
                     if cmd == "376" then
-                        twitch.send("JOIN #"..twitch.config.username)
+                        self:send("JOIN #"..self.username)
                     end
 
                     local handlers = self.commandHandlers[cmd]
@@ -98,7 +96,7 @@ function Server:receive()
                 end
             end
         elseif err ~= "timeout" then
-            tracer.default:error(err)
+            tracer:error(err)
         end
     until err
 end
