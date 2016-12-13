@@ -25,6 +25,20 @@ local Config 			= require('twitch.config')
 local Server 			= require('twitch.server')
 local UI 			    = require('twitch.ui')
 
+function table.removeValue(t, value)
+
+	local remove = {}
+	for i,v in ipairs(t) do
+           if v == value then
+                table.insert(remove, i)
+           end
+	end
+ 
+	for i,v in ipairs(remove) do
+            table.remove(t, v)
+	end
+end
+
 local TwitchClient = { 
     config = nil,
     server = nil,
@@ -102,14 +116,15 @@ function TwitchClient:addViewer(user)
 
         return false
     end
-    if not hasValue(client.userNames, user) then
-        table.insert(client.userNames,user)
+    if not hasValue(self.userNames, user) then
+        table.insert(self.userNames,user)
     end
     client:updateTitle()
 end
 
 function TwitchClient:removeViewer(user)
-    table.remove(client.userNames, user)
+    table.removeValue(self.userNames, user)
+    client:updateTitle()
 end
 
 function TwitchClient.onUISendMessage(args)
