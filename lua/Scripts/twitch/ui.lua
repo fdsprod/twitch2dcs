@@ -311,11 +311,6 @@ function UI:lockKeyboardInput(lock)
 				end	
 			end
 			
-			removeCommandEvents(Input.getUiLayerCommandKeyboardKeys(inputActions.iCommandChat))
-			removeCommandEvents(Input.getUiLayerCommandKeyboardKeys(inputActions.iCommandAllChat))
-			removeCommandEvents(Input.getUiLayerCommandKeyboardKeys(inputActions.iCommandFriendlyChat))
-			removeCommandEvents(Input.getUiLayerCommandKeyboardKeys(inputActions.iCommandChatShowHide))
-			
 			DCS.lockKeyboardInput(keyboardEvents)
 			self._isKeyboardLocked = true
 		end
