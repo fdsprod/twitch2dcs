@@ -22,7 +22,8 @@ local ListBoxItem   = require('ListBoxItem')
 local Tools 		= require('tools')
 local MulChat 		= require('mul_chat')
 local tracer        = require("twitch.tracer")
-local utils 			    = require('twitch.utils')
+local utils         = require('twitch.utils')
+local Input         = require('Input')
 
 local modes = {
     hidden = "hidden",
@@ -35,10 +36,10 @@ local UI = {
     _currentWheelValue = 0,
     _listStatics = {},
     _listMessages = {},
-    _nextChatColorIndex = 1,
     _currentMode = modes.read,
     _x,
     _y,
+    _isKeyboardLocked	= false,
     modes = modes
 }
 local UI_mt = { __index = UI }
@@ -210,9 +211,9 @@ function UI:new(hotkey, defaultMode, x, y)
     ui:resizeEditMessage()
     
     if ui._currentMode == ui.modes.write then
-        ui:readMode()
-    else
         ui:writeMode()
+    else
+        ui:readMode()
     end
     
     ui.window:addPositionCallback(function() ui:positionCallback() end)     
@@ -248,7 +249,7 @@ function UI:writeMode()
     self.pDown:setVisible(true)     
     self.eMessage:setFocused(true)
         
-    DCS.banKeyboard(true)
+    self:lockKeyboardInput(true)
 
     self:updateListM()
 end
@@ -276,7 +277,7 @@ function UI:readMode()
     self.pDown:setVisible(false)
     self.eMessage:setFocused(false)
 
-    DCS.banKeyboard(false)
+    self:lockKeyboardInput(false)
 
     self:updateListM()
 end
@@ -287,6 +288,43 @@ function UI:nextMode()
     else
         self:writeMode()
     end
+end
+
+function UI:lockKeyboardInput(lock)
+	if lock then
+		if not self._isKeyboardLocked then
+			-- блокируем все кнопки клавиатуры, 
+			-- кроме кнопок управления чатом
+			local keyboardEvents	= Input.getDeviceKeys(Input.getKeyboardDeviceName())
+			local inputActions		= Input.getEnvTable().Actions
+			
+			local removeCommandEvents = function(commandEvents)
+				for i, commandEvent in ipairs(commandEvents) do
+					-- из массива удаляем элементы с конца
+					for j = #keyboardEvents, 1, -1 do
+						if keyboardEvents[j] == commandEvent then
+							table.remove(keyboardEvents, j)
+							
+							break
+						end
+					end
+				end	
+			end
+			
+			removeCommandEvents(Input.getUiLayerCommandKeyboardKeys(inputActions.iCommandChat))
+			removeCommandEvents(Input.getUiLayerCommandKeyboardKeys(inputActions.iCommandAllChat))
+			removeCommandEvents(Input.getUiLayerCommandKeyboardKeys(inputActions.iCommandFriendlyChat))
+			removeCommandEvents(Input.getUiLayerCommandKeyboardKeys(inputActions.iCommandChatShowHide))
+			
+			DCS.lockKeyboardInput(keyboardEvents)
+			self._isKeyboardLocked = true
+		end
+	else
+		if self._isKeyboardLocked then
+			DCS.unlockKeyboardInput()
+			self._isKeyboardLocked = false
+		end
+	end	
 end
 
 function UI:resize(w, h)

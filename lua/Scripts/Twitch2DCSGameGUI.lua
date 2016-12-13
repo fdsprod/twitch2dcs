@@ -13,6 +13,7 @@ local string            = base.string
 local math              = base.math
 local assert        	= base.assert
 local pairs         	= base.pairs
+local ipairs         	= base.ipairs
 
 local lfs 			    = require('lfs')
 local net               = require('net')
@@ -31,7 +32,7 @@ local TwitchClient = {
     joinPartSkin = nil,
     userSkins = {},
     nextUserIndex = 1,
-    viewerCount = 0
+    userNames = {}
 }
 local TwitchClient_mt = { __index = TwitchClient }
 local client = nil
@@ -72,7 +73,7 @@ function TwitchClient:getSkinForUser(user)
         
         self.nextUserIndex = self.nextUserIndex + 1
 
-        if self.nextUserIndex > table.getn(self.config.skins) then
+        if self.nextUserIndex > #self.config.skins.messageColors then
             self.nextUserIndex = 1
         end
 
@@ -85,6 +86,30 @@ end
 function TwitchClient:canLogin()
     return (self.config.username ~= nil and self.config.username ~= '') and 
            (self.config.oathToken ~= nil and self.config.oathToken ~= '')
+end
+
+function TwitchClient:addViewer(user)
+    if user == self.config.username then
+        return
+    end
+    local function hasValue (tab, val)
+        for index, value in ipairs (tab) do
+            -- We grab the first index of our sub-table instead
+            if value == val then
+                return true
+            end
+        end
+
+        return false
+    end
+    if not hasValue(client.userNames, user) then
+        table.insert(client.userNames,user)
+    end
+    client:updateTitle()
+end
+
+function TwitchClient:removeViewer(user)
+    table.remove(client.userNames, user)
 end
 
 function TwitchClient.onUISendMessage(args)
@@ -108,22 +133,26 @@ end
 
 function TwitchClient.onUserPart(cmd)
     client.ui:addMessage(client:getTimeStamp().." "..cmd.user.." left.", client.joinPartSkin)
-    client.viewerCount = client.viewerCount - 1
+    client:removeViewer(cmd.user)
 end
 
 function TwitchClient.onUserJoin(cmd)
+    if cmd.user == client.config.username then
+        return
+    end
     client.ui:addMessage(client:getTimeStamp().." "..cmd.user.." joined.", client.joinPartSkin)
-    client.viewerCount = client.viewerCount + 1
-    client:updateTitle()
+    client:addViewer(cmd.user)
 end
 
 function TwitchClient.onUserMessage(cmd)
     local skin = client:getSkinForUser(cmd.user)
     client.ui:addMessage(client:getTimeStamp().." "..cmd.user..": "..cmd.param2, skin)
+    client:addViewer(cmd.user)
 end
 
 function TwitchClient:updateTitle()
-    client.ui:setTitle("Twitch Chat | "..client.viewerCount.." viewers")
+    local viewerCount = #client.userNames
+    client.ui:setTitle("Twitch Chat | "..viewerCount.." viewers")
 end
 
 function TwitchClient:connect() 
