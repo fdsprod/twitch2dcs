@@ -43,7 +43,7 @@ function Server:connect(username, oauthToken, caps, timeout)
         self:send("CAP REQ : "..table.concat(caps, " "))
         self:send("PASS "..oauthToken)
         self:send("NICK "..username)
-        self:send("JOIN #"..username)
+        self:send("JOIN #"..string.lower(username))
 
         self.username = username
         self.isConnected = true
