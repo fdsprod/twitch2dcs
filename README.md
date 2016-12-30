@@ -28,3 +28,7 @@ _New Installs_
 3. Add your Twitch username
 4. Add your Twitch oauth key from [TwitchApps.com](http://twitchapps.com/tmi/) make sure you include the **"oauth:"** text
 5. Launch DCS and enjoy communicating with Twitch from ingame.
+
+### Support
+
+Discord - https://discord.gg/8zKd6ea
