@@ -11,10 +11,12 @@ local pairs         = base.pairs
 local ipairs        = base.ipairs
 
 local lfs           = require('lfs')
+local os            = require('os')
 local net           = require('net')
 local DCS           = require("DCS") 
 local U             = require('me_utilities')
 local Skin			= require('Skin')
+local SkinUtils     = require('SkinUtils')
 local Gui           = require('dxgui')
 local DialogLoader  = require('DialogLoader')
 local EditBox       = require('EditBox')
@@ -23,12 +25,13 @@ local Tools 		= require('tools')
 local MulChat 		= require('mul_chat')
 local tracer        = require("twitch.tracer")
 local utils         = require('twitch.utils')
+local UpdateManager = require('UpdateManager')
 local Input         = require('Input')
 
 local modes = {
     hidden = "hidden",
     read = "read",
-    write = "write",
+    --write = "write",
 }
 
 local UI = {
@@ -37,23 +40,154 @@ local UI = {
     _listStatics = {},
     _listMessages = {},
     _currentMode = modes.read,
-    _x,
-    _y,
-    _isKeyboardLocked	= false,
-    modes = modes
+    _x = 0,
+    _y = 0,
+    _isKeyboardLocked = false,
+    modes = modes,
+    fontSize = 14,
+    lockUIPosition = false,
+    pressedKeys = {}
 }
 local UI_mt = { __index = UI }
+
+function UI:isInBounds(x, y)
+    local x_,y_,w_,h_ = self.window:getBounds()
+    return x >= x_ and y >= y_ and x <= x_+w_ and y <= y_+h_       
+end
+
+function UI:new(hotkey, x, y, fontSize)
+    local ui = base.setmetatable({}, UI_mt)
+
+    ui._currentMode = defaultMode
+    ui.window = DialogLoader.spawnDialogFromFile(lfs.writedir() .. 'Scripts\\dialogs\\twitch_chat.dlg', cdata)
+    ui.box = ui.window.Box
+    ui.pNoVisible = ui.window.pNoVisible
+    ui.pDown = ui.box.pDown
+    ui.eMessage = ui.pDown.eMessage
+    ui.pMsg = ui.box.pMsg
+    ui.vsScroll = ui.box.vsScroll
+    ui._x = x
+    ui._y = y
+
+    ui.window:addMouseMoveCallback(function(self, x, y) 
+        if ui:isInBounds(x,y) then
+	        ui.hideTimerTime = os.time()
+        end
+    end)
+
+    ui.vsScroll.onChange = ui.onChange_vsScroll
+    ui.eMessage.onChange = ui.onChange_eMessage    
+    
+    ui.window:addHotKeyCallback(hotkey, function() ui:nextMode() end)
+    ui.pMsg:addMouseWheelCallback(function(self, x, y, clicks) ui:onMouseWheel_eMessage(x, y, clicks) end)
+    
+    ui.vsScroll:setRange(1,1)
+    ui.vsScroll:setValue(1)
+
+    ui._currentWheelValue = 1
+    
+    ui.widthChat, ui.heightChat = ui.pMsg:getSize()
+    
+    ui.skinFactory = ui.window.pNoVisible.eWhiteText;
+    ui.skinModeWrite = ui.pNoVisible.pModeWrite:getSkin()
+    ui.skinModeRead = ui.pNoVisible.pModeRead:getSkin()
+            
+    ui.eMx, ui.eMy, ui.eMw = ui.eMessage:getBounds()
+
+    local testSkin = ui.skinFactory:getSkin()
+
+    testSkin.skinData.states.released[2].text.fontSize =  fontSize      
+
+    ui.testStatic = EditBox.new()
+    ui.testStatic:setSkin(testSkin)
+    ui.testStatic:setReadOnly(true)   
+    ui.testStatic:setTextWrapping(true)  
+    ui.testStatic:setMultiline(true) 
+    ui.testStatic:setBounds(0,0,ui.widthChat,20)
+    
+    ui._listStatics = {}
+    
+    for i = 1, 40 do
+        local staticNew = EditBox.new()        
+        table.insert(ui._listStatics, staticNew)
+        staticNew:setReadOnly(true)   
+        staticNew:setTextWrapping(true)  
+        staticNew:setMultiline(true) 
+        ui.pMsg:insertWidget(staticNew)
+    end
+    
+    function ui.eMessage:onKeyDown(key, unicode) 
+        if 'return' == key then          
+            local text = ui.eMessage:getText()            
+            if text ~= "\n" and text ~= nil then
+                text = string.sub(text, 1, (string.find(text, '%s+$') or 0) - 1)
+                ui:onCallback("onUISendMessage", {message = text})
+            end
+            ui.eMessage:setText("")
+            ui.eMessage:setSelectionNew(0,0,0,0)
+            ui:resizeEditMessage()
+        end
+    end
+	
+    ui.testE = EditBox.new()    
+    ui.testE:setTextWrapping(true)  
+    ui.testE:setMultiline(true)  
+    ui.testE:setBounds(0,0,ui.eMw,20)
+    ui.testE:setSkin(ui.eMessage:getSkin())	
+
+    ui.w, ui.h = Gui.GetWindowSize()
+            
+    ui:resize(ui.w, ui.h)
+    ui:resizeEditMessage()
+
+    ui:writeMode()
+    ui:readMode()
+    
+    ui.window:addPositionCallback(function() ui:positionCallback() end)     
+    ui:positionCallback()
+
+    ui._isWindowCreated = true
+
+    tracer:info("Window created")
+
+    ui:setVisible(true)
+
+    return ui
+end
+
+function UI:writeMode()
+    self._currentMode = modes.write
+    tracer:info("Setting UI to write mode")
+
+    self:setVisible(true)
+
+    self.box:setVisible(true)
+    self.box:setSkin(self.skinModeWrite)
+
+    self.window:setSize(360, 455)
+    self.window:setSkin(Skin.windowSkinChatWrite())	
+
+    self.vsScroll:setVisible(true)
+    self.pDown:setVisible(true)     
+    self.eMessage:setFocused(true)
+        
+    self:lockKeyboardInput(true)
+
+    self:updateListM()
+    
+    self.hideTimerTime = nil
+end
 
 function UI:onChange_vsScroll(self)
     self._currentWheelValue = self.vsScroll:getValue()
     self:updateListM()
 end
 
-function UI:addMessage(message, skin)
+function UI:addMessage(user, message, skin, textSkin)
     self.testStatic:setText(message)
-
+    
     local newW, newH = self.testStatic:calcSize()       
-    local msg = {message = message, skin = skin, height = newH}
+    local msg = {user = user, message = message, skin = skin, textSkin = textSkin, height = newH, timeStart = DCS.getModelTime()}
 
     table.insert(self._listMessages, msg)
         
@@ -70,6 +204,14 @@ function UI:addMessage(message, skin)
     end   
     
     self:updateListM()
+	
+    if self.showOnNewMessage then
+	    self.hideTimerTime = os.time()
+    end
+
+    if self._currentMode == modes.hidden then
+        self:readMode()
+    end
 end
 
 function UI:onMouseWheel_eMessage(x, y, clicks)
@@ -104,18 +246,23 @@ function UI:updateListM()
     if self._listMessages[curMsg] then          
         while curMsg > 0 and self.heightChat > (offset + self._listMessages[curMsg].height) do
             local msg = self._listMessages[curMsg]
-            self._listStatics[curStatic]:setSkin(msg.skin)                                 
+            msg.textSkin.skinData.states.released[2].text.fontSize = self.fontSize
+            msg.skin.skinData.states.released[2].text.fontSize = self.fontSize
+            self._listStatics[curStatic]:setSkin(msg.textSkin)                                 
             self._listStatics[curStatic]:setBounds(0,self.heightChat-offset-msg.height,self.widthChat,msg.height) 
-            self._listStatics[curStatic]:setText(msg.message)            
+            self._listStatics[curStatic]:setText(msg.message)   
+            self._listStatics[curStatic+1]:setSkin(msg.skin)                                 
+            self._listStatics[curStatic+1]:setBounds(0,self.heightChat-offset-msg.height,self.widthChat,msg.height) 
+            self._listStatics[curStatic+1]:setText(msg.user)           
             offset = offset + msg.height
             curMsg = curMsg - 1
-            curStatic = curStatic + 1
+            curStatic = curStatic + 2
             num = num + 1
         end
     end    
 end
 
---[[
+--[[ Callbacks
 {
     onUISendMessage({message})
     onUIModeChanged({mode})
@@ -133,124 +280,17 @@ function UI:onCallback(callback, args)
     end
 end
 
-function UI:new(hotkey, defaultMode, x, y)
-    local ui = base.setmetatable({}, UI_mt)
-    
-    ui._currentMode = defaultMode
-    ui.window = DialogLoader.spawnDialogFromFile(lfs.writedir() .. 'Scripts\\dialogs\\twitch_chat.dlg', cdata)
-    ui.box = ui.window.Box
-    ui.pNoVisible = ui.window.pNoVisible
-    ui.pDown = ui.box.pDown
-    ui.eMessage = ui.pDown.eMessage
-    ui.pMsg = ui.box.pMsg
-    ui.vsScroll = ui.box.vsScroll
-    ui._x = x
-    ui._y = y
-
-    ui.vsScroll.onChange = ui.onChange_vsScroll
-    ui.eMessage.onChange = ui.onChange_eMessage    
-    
-    ui.window:addHotKeyCallback(hotkey, function() ui:nextMode() end)
-    ui.pMsg:addMouseWheelCallback(function(self, x, y, clicks) ui:onMouseWheel_eMessage(x, y, clicks) end)
-    
-    ui.vsScroll:setRange(1,1)
-    ui.vsScroll:setValue(1)
-
-    ui._currentWheelValue = 1
-    
-    ui.widthChat, ui.heightChat = ui.pMsg:getSize()
-    
-    ui.skinFactory = ui.window.pNoVisible.eWhiteText;
-    ui.skinModeWrite = ui.pNoVisible.pModeWrite:getSkin()
-    ui.skinModeRead = ui.pNoVisible.pModeRead:getSkin()
-            
-    ui.eMx, ui.eMy, ui.eMw = ui.eMessage:getBounds()
-
-    local testSkin = ui.skinFactory:getSkin()
-
-    ui.testStatic = EditBox.new()
-    ui.testStatic:setSkin(testSkin)
-    ui.testStatic:setReadOnly(true)   
-    ui.testStatic:setTextWrapping(true)  
-    ui.testStatic:setMultiline(true) 
-    ui.testStatic:setBounds(0,0,ui.widthChat,20)
-    
-    ui._listStatics = {}
-    
-    for i = 1, 20 do
-        local staticNew = EditBox.new()        
-        table.insert(ui._listStatics, staticNew)
-        staticNew:setReadOnly(true)   
-        staticNew:setTextWrapping(true)  
-        staticNew:setMultiline(true) 
-        ui.pMsg:insertWidget(staticNew)
-    end
-    
-    function ui.eMessage:onKeyDown(key, unicode) 
-        if 'return' == key then          
-            local text = ui.eMessage:getText()            
-            if text ~= "\n" and text ~= nil then
-                text = string.sub(text, 1, (string.find(text, '%s+$') or 0) - 1)
-                ui:onCallback("onUISendMessage", {message = text})
-            end
-            ui.eMessage:setText("")
-            ui.eMessage:setSelectionNew(0,0,0,0)
-            ui:resizeEditMessage()
-        end
-    end
-	
-    ui.testE = EditBox.new()    
-    ui.testE:setTextWrapping(true)  
-    ui.testE:setMultiline(true)  
-    ui.testE:setBounds(0,0,ui.eMw,20)
-    ui.testE:setSkin(ui.eMessage:getSkin())	
-
-    ui.w, ui.h = Gui.GetWindowSize()
-            
-    ui:resize(ui.w, ui.h)
-    ui:resizeEditMessage()
-    
-    if ui._currentMode == ui.modes.write then
-        ui:writeMode()
-    else
-        ui:readMode()
-    end
-    
-    ui.window:addPositionCallback(function() ui:positionCallback() end)     
-    ui:positionCallback()
-
-    ui._isWindowCreated = true
-
-    tracer:info("Window created")
-
-    ui:setVisible(true)
-
-    return ui
-end
-
 function UI:setVisible(b)
     self.window:setVisible(b)
 end
 
-function UI:writeMode()
-    self._currentMode = modes.write
-    tracer:info("Setting UI to write mode")
+function UI:setFontSize(fontSize)
+    local testSkin = self.skinFactory:getSkin()
 
-    self:onCallback("onUIModeChanged", {mode=modes.write})
-    self:setVisible(true)
+    testSkin.skinData.states.released[2].text.fontSize = fontSize
 
-    self.box:setVisible(true)
-    self.box:setSkin(self.skinModeWrite)
-
-    self.window:setSize(360, 455)
-    self.window:setSkin(Skin.windowSkinChatWrite())	
-
-    self.vsScroll:setVisible(true)
-    self.pDown:setVisible(true)     
-    self.eMessage:setFocused(true)
-        
-    self:lockKeyboardInput(true)
-
+    self.fontSize = fontSize
+    self.testStatic:setSkin(testSkin)
     self:updateListM()
 end
 
@@ -258,7 +298,6 @@ function UI:readMode()
     self._currentMode = modes.read
     tracer:info("Setting UI to read mode")
     
-    self:onCallback("onUIModeChanged", {mode=modes.read})
     self:setVisible(true)
 
     self.box:setVisible(true)
@@ -273,6 +312,37 @@ function UI:readMode()
     self.window:setSize(360, 455)
     self.window:setSkin(skin)
 
+    if self.lockUIPosition then
+        self.window:setHasCursor(false)
+    else
+        self.window:setHasCursor(true)
+    end
+
+    self.vsScroll:setVisible(false)
+    self.pDown:setVisible(false)
+    self.eMessage:setFocused(false)
+
+    self:lockKeyboardInput(false)
+
+    self:updateListM()
+end
+
+function UI:hideMode() 
+    self._currentMode = modes.hidden
+    tracer:info("Setting UI to hidden mode")
+    
+    self.box:setVisible(false)
+    self.box:setSkin(self.skinModeRead)
+
+    local skin = Skin.windowSkinTransparent()
+
+    skin.skinData.skins.header.skinData.states.disabled[1].bkg.center_center.a = 0
+    skin.skinData.skins.header.skinData.states.released[1].bkg.center_center.a = 0
+    skin.skinData.skins.header.skinData.states.released[2].bkg.center_center.a = 0
+
+    self.window:setSize(0, 0)
+    self.window:setSkin(skin)
+
     self.vsScroll:setVisible(false)
     self.pDown:setVisible(false)
     self.eMessage:setFocused(false)
@@ -283,10 +353,10 @@ function UI:readMode()
 end
 
 function UI:nextMode()
-    if self._currentMode == modes.write then
+    if self._currentMode == modes.hidden then
         self:readMode()
     else
-        self:writeMode()
+        self:hideMode()
     end
 end
 
@@ -303,8 +373,7 @@ function UI:lockKeyboardInput(lock)
 					-- из массива удаляем элементы с конца
 					for j = #keyboardEvents, 1, -1 do
 						if keyboardEvents[j] == commandEvent then
-							table.remove(keyboardEvents, j)
-							
+							table.remove(keyboardEvents, j)							
 							break
 						end
 					end

@@ -29,6 +29,10 @@ function Server:new(hostAddress, port)
     return server 
 end
 
+function Server:reset()
+    self.connection = nil
+end
+
 function Server:connect(username, oauthToken, caps, timeout)
     local ip = socket.dns.toip(self.hostAddress)
     local success = assert(self.connection:connect(ip, self.port))
@@ -99,6 +103,8 @@ function Server:receive()
             tracer:error(err)
         end
     until err
+
+    return err
 end
 
 function Server:addCommandHandler(cmd, handler)
