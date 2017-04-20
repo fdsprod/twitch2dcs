@@ -1,11 +1,10 @@
 
 local status, err = pcall(function() 
+
     local base = _G
 
     package.path  = package.path..";.\\LuaSocket\\?.lua;"..'.\\Scripts\\?.lua;'.. '.\\Scripts\\UI\\?.lua;'..lfs.writedir()..'Scripts\\?.lua;'
     package.cpath = package.cpath..";.\\LuaSocket\\?.dll;"
-
-    module("Twitch2DCS")
 
     local os 			    = base.os
     local require           = base.require
@@ -18,15 +17,13 @@ local status, err = pcall(function()
     local ipairs         	= base.ipairs
     local world             = base.world
 
-    local lfs 			    = require('lfs')
     local net               = require('net')
-    local DCS               = require("DCS") 
-    local MulChat 			= require('mul_chat')
-    local OptionsData	    = require('Options.Data')
+    local MsgWindow         = require('MsgWindow')
 
     local utils 			= require('twitch.utils')
     local tracer 			= require('twitch.tracer')
     local Server 			= require('twitch.server')
+    local Config 			= require('twitch.config')
     local UI 			    = require('twitch.ui')
 
     function table.removeValue(t, value)
@@ -49,92 +46,35 @@ local status, err = pcall(function()
         joinPartSkin = nil,
         userSkins = {},
         nextUserIndex = 1,
-        userNames = {}
+        userNames = {},
+        config = nil
     }
+
     local TwitchClient_mt = { __index = TwitchClient }
     local client = nil
+    local config = Config:new()
 
-    local function getOption(name)
-        return OptionsData.getPlugin("Twitch2DCS", name)  
-    end
-    
-    local function setOption(name, value)
-        OptionsData.setPlugin("Twitch2DCS", name, value)
-        OptionsData.saveChanges()  
-    end
-
-    local function isEnabled()
-        return getOption("isEnabled")
-    end
-
-    local function getPosition()
-        return getOption("position")
-    end
-
-    local function getMessageColors()
-        return getOption("messageColors")
-    end
-
-    local function getFontSize()
-        return getOption("fontSize")
-    end 
-
-    local function getHideShowHotkey()
-        return getOption("hideShowHotkey")
-    end 
-
-    local function getJoinPartColor()
-        return getOption("joinPartColor")
-    end 
-
-    local function getShowJoinPartMessages()
-        return getOption("showJoinPart")
-    end 
-
-    local function getSelfColor()
-        return getOption("selfColor")
-    end 
-
-    local function getLockUIPosition()
-        return getOption("lockUIPosition")
-    end 
-
-    local function setPosition(value)
-        return getOption("position", value)
-    end
-
-    local function getAuthInfo()
-        return {
-            username = getOption("username"),
-            oauthToken = getOption("oauth"),
-            hostAddress = getOption("hostAddress"),
-            port = getOption("port"),
-            caps  = getOption("caps"),
-            timeout  = getOption("timeout"),
-            }
-    end
 
     function TwitchClient:new() 
         local self = base.setmetatable(self, TwitchClient_mt)
 
-        net.log("Twitch2DCS - Creating server")
+        tracer:info("Creating server")
 
-        local isEnabled = isEnabled()
-        local authInfo =getAuthInfo()
-        local position = getPosition()
-        local fontSize = getFontSize()
-        local hideShowHotkey =getHideShowHotkey()
-        local joinPartColor = getJoinPartColor()
-        local selfColor = getSelfColor()
+        local isEnabled = config:isEnabled()
+        local authInfo =config:getAuthInfo()
+        local fontSize = config:getFontSize()
+        local joinPartColor =config:getJoinPartColor()
+        local selfColor = config:getSelfColor()
 
         self.server = Server:new(authInfo.hostAddress, authInfo.port)
-        
-        net.log("Twitch2DCS - Creating ui")
 
-        self.ui = UI:new(hideShowHotkey, position.x, position.y, fontSize)
-        self.ui.lockUIPosition = getLockUIPosition()
+        tracer:info("Creating ui")
+
+        self.ui = UI:new()
+        self.ui.lockUIPosition = config:getLockUIPosition()
+        self.ui:readMode()
         
-        net.log("Twitch2DCS - Setting up theme")
+        tracer:info("Setting up theme")
 
         self.joinPartSkin = self.ui.skinFactory:getSkin()
         self.joinPartSkin.skinData.states.released[2].text.color = joinPartColor
@@ -149,17 +89,17 @@ local status, err = pcall(function()
             self.userSkins[authInfo.username] = userSkin
         end
 
-        return self;
+        return self
     end
 
     function TwitchClient:getSkinForUser(user) 
         if not self.userSkins[user] then    
-            local messageColors = getMessageColors()
+            local messageColors = config:getMessageColors()
             local userSkin = self.ui.skinFactory:getSkin()
             local color = messageColors[self.nextUserIndex]
 
             userSkin.skinData.states.released[2].text.color = color        
-            userSkin.skinData.states.released[2].text.fontSize = getFontSize()        
+            userSkin.skinData.states.released[2].text.fontSize = config:getFontSize()        
 
             self.userSkins[user] = userSkin                
             self.nextUserIndex = self.nextUserIndex + 1
@@ -175,15 +115,15 @@ local status, err = pcall(function()
     end
 
     function TwitchClient:canLogin()
-        local isEnabled = isEnabled()
-        local authInfo = getAuthInfo()
+        local isEnabled = config:isEnabled()
+        local authInfo = config:getAuthInfo()
         return isEnabled and
             (authInfo.username ~= nil and authInfo.username ~= '') and 
             (authInfo.oauthToken ~= nil and authInfo.oauthToken ~= '')
     end
 
     function TwitchClient:addViewer(user)
-        local authInfo = getAuthInfo()
+        local authInfo = config:getAuthInfo()
         if user == authInfo.username then
             return
         end
@@ -209,27 +149,27 @@ local status, err = pcall(function()
     end
 
     function TwitchClient.onUISendMessage(args)
-        local authInfo = getAuthInfo()
-        local selfColor = getSelfColor()
+        local authInfo = config:getAuthInfo()
+        local selfColor = config:getSelfColor()
         local username = authInfo.username
-        local skin = getSkinForUser(username)            
+        local skin = config:getSkinForUser(username)            
         local color = selfColor   
         local userSkin = client.ui.skinFactory:getSkin()
-         
+        
         userSkin.skinData.states.released[2].text.color = color
-        userSkin.skinData.states.released[2].text.fontSize = getFontSize()
+        userSkin.skinData.states.released[2].text.fontSize = config:getFontSize()
 
         client.server:send("PRIVMSG #"..username.." :"..args.message)
         client.ui:addMessage(client:getTimeStamp().." "..username..": ", client:getTimeStamp().." "..username..": "..args.message, skin, userSkin)
     end
 
     function TwitchClient.onUIPositionChanged(args)
-        setOption("position", {x = args.x, y = args.y})
+        config:setOption("position", {x = args.x, y = args.y})
     end
 
     function TwitchClient.onUserPart(cmd)
         client:removeViewer(cmd.user)
-        if not getShowJoinPartMessages() then
+        if not config:getShowJoinPartMessages() then
             return
         end
         client.ui:addMessage(client:getTimeStamp().." "..cmd.user.." left.", client:getTimeStamp().." "..cmd.user.." left.", client.joinPartSkin, client.joinPartSkin)
@@ -238,9 +178,9 @@ local status, err = pcall(function()
     function TwitchClient.onUserJoin(cmd)
         client:addViewer(cmd.user)
 
-        local authInfo = getAuthInfo()
+        local authInfo = config:getAuthInfo()
 
-        if not getShowJoinPartMessages() or cmd.user == authInfo.username then
+        if not config:getShowJoinPartMessages() or cmd.user == authInfo.username then
             return
         end
 
@@ -251,12 +191,12 @@ local status, err = pcall(function()
         client:addViewer(cmd.user)
 
         local skin = client:getSkinForUser(cmd.user)
-        local selfColor = getSelfColor()
+        local selfColor = config:getSelfColor()
         local color = selfColor   
         local userSkin = client.ui.skinFactory:getSkin()
-         
+        
         userSkin.skinData.states.released[2].text.color = color
-        userSkin.skinData.states.released[2].text.fontSize = getFontSize()
+        userSkin.skinData.states.released[2].text.fontSize = config:getFontSize()
         
         client.ui:addMessage(client:getTimeStamp().." "..cmd.user..": ", client:getTimeStamp().." "..cmd.user..": "..cmd.param2, skin, userSkin)
     end
@@ -267,21 +207,21 @@ local status, err = pcall(function()
     end
 
     function TwitchClient:connect() 
-        net.log("Twitch2DCS - Connecting")
+        tracer:info("Connecting")
         self.server:addCommandHandler("PRIVMSG", self.onUserMessage)
         self.server:addCommandHandler("JOIN", self.onUserJoin)
         self.server:addCommandHandler("PART", self.onUserPart)
 
         self.ui:setCallbacks(self)
 
-        local authInfo = getAuthInfo()
+        local authInfo = config:getAuthInfo()
 
         self.server:connect(
             authInfo.username, 
             authInfo.oauthToken, 
             authInfo.caps, 
             authInfo.timeout)
-        net.log("Twitch2DCS - Connected")
+        tracer:info("Connected")
     end
 
     function TwitchClient:receive() 
@@ -290,7 +230,7 @@ local status, err = pcall(function()
         if err and err ~= "timeout" and err == "closed" and self:isEnabled() then
             self.server:reset()
 
-            local authInfo = getAuthInfo()
+            local authInfo = config:getAuthInfo()
 
             self.server:connect(
             authInfo.username, 
@@ -305,13 +245,13 @@ local status, err = pcall(function()
         return string.format("%i:%02i:%02i", date.hour, date.min, date.sec)
     end
 
-    local lastlockUIPosition = getLockUIPosition();
-    local lastFontSize = getFontSize();
+    local lastlockUIPosition = config:getLockUIPosition()
+    local lastFontSize = config:getFontSize()
 
     local callacks = { 
         onSimulationFrame = function() 
             if client == nil then
-                 net.log("Twitch2DCS Creating client")
+                tracer:info("Creating client")
                 client = TwitchClient:new()
 
                 if client == nil or not client:canLogin() then 
@@ -326,19 +266,19 @@ local status, err = pcall(function()
                 return
             end
 
-            local fontSize = getFontSize();
+            local fontSize = config:getFontSize()
 
             if fontSize ~= lastFontSize then
                 client.ui:setFontSize(fontSize)
                 lastFontSize = fontSize
             end
 
-            local lockUIPosition = getLockUIPosition();
+            local lockUIPosition = config:getLockUIPosition()
 
-            if lockUIPosition ~= lastFontSize then
+            if lockUIPosition ~= lastlockUIPosition then
                 client.ui.lockUIPosition = lockUIPosition
                 client.ui:readMode()
-                lockUIPosition = lockUIPosition
+                lastlockUIPosition = lockUIPosition
             end
             
             client:receive()
@@ -347,20 +287,11 @@ local status, err = pcall(function()
 
     DCS.setUserCallbacks(callacks)
 
--- local InputData 			= require('Input.Data')
--- local ProfileDatabase 		= require('Input.ProfileDatabase')
--- local InputUtils 			= require('Input.Utils')
--- local Input 				= require('Input')
-
+    tracer:info("Loaded");
     net.log("Loaded - Twitch2DCS GameGUI")
 end)
 
 if err then
-    local base = _G
-    local require           = base.require
-    local net               = require('net')
-    local MsgWindow         = require('MsgWindow')
-    
-    net.log("Twitch2DCS failed to load - "..err)
+net.log("Twitch2DCS failed to load - "..err)
     MsgWindow.warning("Twitch2DCS failed to load - "..err, _("OK")):show()
 end

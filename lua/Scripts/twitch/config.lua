@@ -11,171 +11,75 @@ local assert        = base.assert
 local pairs         = base.pairs
 local ipairs        = base.ipairs
 
-local tools 		= require('tools')
-local lfs 			= require('lfs')
-local U             = require('me_utilities')
-local tracer        = require("twitch.tracer")
+local OptionsData	= require('Options.Data')
 
-Config = {
-    version = 2,
-    debugMode = false,
-    credentials = {        
-        username = "",
-        oauthToken = "",
-    },
-    twitch = {
-        hostAddress = "irc.chat.twitch.tv",
-        port = 6667,
-        caps = {
-            "twitch.tv/membership",
-        },    
-        timeout = 0,
-    },
-    ui = {
-        hotkeys = {
-            show = "[.]",
-            switchModes = "Ctrl+Shift+escape",
-        },
-        inactivity = { 
-            showOnHotkeyTimer = 10,
-            showOnNewMessage = true,
-            hideWhenInactive = true,
-            hideTimer = 10,
-        },
-        notifications = {
-            joinPart = true,
-        },
-        position = { x = 66, y = 13 },
-        mode = "read",
-        fontSize = 14,
-        theme = {
-            joinPartColor = 
-            {
-                b = 0.878,
-                g = 0.878,
-                r = 0.878,
-            },
-            selfColor = 
-            {
-                b = 1,
-                g = 1,
-                r = 1,
-            },
-            messageColors = {
-                {
-                    b = 1.000,
-                    g = 0.000,
-                    r = 0.000,
-                },
-                {
-                    b = 0.314,
-                    g = 0.498,
-                    r = 1.000,
-                },
-                {
-                    b = 1.000,
-                    g = 0.565, 
-                    r = 0.118,
-                },
-                {
-                    b = 0.498,
-                    g = 1.000, 
-                    r = 0.000, 
-                },
-                {
-                    b = 0.196,
-                    g = 0.804, 
-                    r = 0.604, 
-                },
-                {
-                    b = 0.000,
-                    g = 0.502,  
-                    r = 0.000, 
-                },
-                {
-                    b = 0.000,
-                    g = 0.271,   
-                    r = 1.000, 
-                },
-                {
-                    b = 0.000,
-                    g = 0.000,    
-                    r = 1.000, 
-                },
-                {
-                    b = 0.125,
-                    g = 0.647,    
-                    r = 0.855,  
-                },
-                {
-                    b = 0.706,
-                    g = 0.412,     
-                    r = 1.000,  
-                },
-                {
-                    b = 0.627,
-                    g = 0.620,     
-                    r = 0.373,  
-                },
-                {
-                    b = 0.341,
-                    g = 0.545,      
-                    r = 0.180,  
-                },
-                {
-                    b = 0.118,
-                    g = 0.412,      
-                    r = 0.824,   
-                },
-                {
-                    b = 0.886,
-                    g = 0.169,       
-                    r = 0.541,    
-                },
-                {
-                    b = 0.133,
-                    g = 0.133,        
-                    r = 0.698,    
-                },     
-            }
-        }
-    }
-}
+Config = {}
 
 local Config_mt = { __index = Config }
 
-local function cloneTable(t)
-	local result = {}
-
-	for k, v in pairs(t) do
-		if 'table' == type(v) then
-			result[k] = cloneTable(v)
-		else
-			result[k] = v
-		end
-	end
-
-	return result
+function Config:new()
+    local config = base.setmetatable({}, Config_mt)
+    return config
 end
 
-function Config:new(file)
-    local self = base.setmetatable(cloneTable(self), Config_mt)
-    local tbl = tools.safeDoFile(file, false)
-    self.file = file
-    if (tbl and tbl.config) then
-        for k,v in pairs(tbl.config) do
-            self[k] = v 
-        end
-    else
-        tracer:info("Configuration not found, using defaults...")
-    end    
-
-    return self 
+function Config:getOption(name)
+    return OptionsData.getPlugin("Twitch2DCS", name)  
 end
 
-function Config:save()
-    tracer:info("Saving configuration")
-    U.saveInFile(self, 'config', self.file)	
+function Config:setOption(name, value)
+    OptionsData.setPlugin("Twitch2DCS", name, value)
+    OptionsData.saveChanges()  
+end
+
+function Config:isEnabled()
+    return self:getOption("isEnabled")
+end
+
+function Config:getPosition()
+    return self:getOption("position")
+end
+
+function Config:getMessageColors()
+    return self:getOption("messageColors")
+end
+
+function Config:getFontSize()
+    return self:getOption("fontSize")
+end 
+
+function Config:getHideShowHotkey()
+    return self:getOption("hideShowHotkey")
+end 
+
+function Config:getJoinPartColor()
+    return self:getOption("joinPartColor")
+end 
+
+function Config:getShowJoinPartMessages()
+    return self:getOption("showJoinPart")
+end 
+
+function Config:getSelfColor()
+    return self:getOption("selfColor")
+end 
+
+function Config:getLockUIPosition()
+    return self:getOption("lockUIPosition")
+end 
+
+function Config:setPosition(value)
+    return self:getOption("position", value)
+end
+
+function Config:getAuthInfo()
+    return {
+        username = self:getOption("username"),
+        oauthToken = self:getOption("oauth"),
+        hostAddress = self:getOption("hostAddress"),
+        port = self:getOption("port"),
+        caps  = self:getOption("caps"),
+        timeout  = self:getOption("timeout"),
+        }
 end
 
 return Config

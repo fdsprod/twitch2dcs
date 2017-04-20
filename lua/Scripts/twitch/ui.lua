@@ -24,6 +24,7 @@ local ListBoxItem   = require('ListBoxItem')
 local Tools 		= require('tools')
 local MulChat 		= require('mul_chat')
 local tracer        = require("twitch.tracer")
+local Config        = require("twitch.config")
 local utils         = require('twitch.utils')
 local UpdateManager = require('UpdateManager')
 local Input         = require('Input')
@@ -46,7 +47,8 @@ local UI = {
     modes = modes,
     fontSize = 14,
     lockUIPosition = false,
-    pressedKeys = {}
+    pressedKeys = {},
+    config = nil
 }
 local UI_mt = { __index = UI }
 
@@ -55,9 +57,15 @@ function UI:isInBounds(x, y)
     return x >= x_ and y >= y_ and x <= x_+w_ and y <= y_+h_       
 end
 
-function UI:new(hotkey, x, y, fontSize)
+function UI:new()
     local ui = base.setmetatable({}, UI_mt)
+    
+    ui.config = Config:new()
 
+    local fontSize = ui.config:getFontSize()
+    local hideShowHotkey =ui.config:getHideShowHotkey()
+    local position = ui.config:getPosition()
+    
     ui._currentMode = defaultMode
     ui.window = DialogLoader.spawnDialogFromFile(lfs.writedir() .. 'Scripts\\dialogs\\twitch_chat.dlg', cdata)
     ui.box = ui.window.Box
@@ -66,8 +74,8 @@ function UI:new(hotkey, x, y, fontSize)
     ui.eMessage = ui.pDown.eMessage
     ui.pMsg = ui.box.pMsg
     ui.vsScroll = ui.box.vsScroll
-    ui._x = x
-    ui._y = y
+    ui._x = position.x
+    ui._y = position.y
 
     ui.window:addMouseMoveCallback(function(self, x, y) 
         if ui:isInBounds(x,y) then
@@ -78,7 +86,7 @@ function UI:new(hotkey, x, y, fontSize)
     ui.vsScroll.onChange = ui.onChange_vsScroll
     ui.eMessage.onChange = ui.onChange_eMessage    
     
-    ui.window:addHotKeyCallback(hotkey, function() ui:nextMode() end)
+    ui.window:addHotKeyCallback(hideShowHotkey, function() ui:nextMode() end)
     ui.pMsg:addMouseWheelCallback(function(self, x, y, clicks) ui:onMouseWheel_eMessage(x, y, clicks) end)
     
     ui.vsScroll:setRange(1,1)
@@ -115,20 +123,7 @@ function UI:new(hotkey, x, y, fontSize)
         staticNew:setMultiline(true) 
         ui.pMsg:insertWidget(staticNew)
     end
-    
-    function ui.eMessage:onKeyDown(key, unicode) 
-        if 'return' == key then          
-            local text = ui.eMessage:getText()            
-            if text ~= "\n" and text ~= nil then
-                text = string.sub(text, 1, (string.find(text, '%s+$') or 0) - 1)
-                ui:onCallback("onUISendMessage", {message = text})
-            end
-            ui.eMessage:setText("")
-            ui.eMessage:setSelectionNew(0,0,0,0)
-            ui:resizeEditMessage()
-        end
-    end
-	
+    	
     ui.testE = EditBox.new()    
     ui.testE:setTextWrapping(true)  
     ui.testE:setMultiline(true)  
