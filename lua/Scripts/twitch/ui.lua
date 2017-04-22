@@ -77,16 +77,13 @@ function UI:new()
     ui._x = position.x
     ui._y = position.y
 
-    ui.window:addMouseMoveCallback(function(self, x, y) 
-        if ui:isInBounds(x,y) then
-	        ui.hideTimerTime = os.time()
-        end
-    end)
-
     ui.vsScroll.onChange = ui.onChange_vsScroll
     ui.eMessage.onChange = ui.onChange_eMessage    
     
-    ui.window:addHotKeyCallback(hideShowHotkey, function() ui:nextMode() end)
+    if hideShowHotkey and hideShowHotkey ~= "NONE" then
+        ui.window:addHotKeyCallback(hideShowHotkey, function() ui:nextMode() end)
+    end
+
     ui.pMsg:addMouseWheelCallback(function(self, x, y, clicks) ui:onMouseWheel_eMessage(x, y, clicks) end)
     
     ui.vsScroll:setRange(1,1)
