@@ -14,7 +14,7 @@ declare_plugin(self_ID,
 	shortName	 =	 "Twitch2DCS" ,
 	fileMenuName = _("Twitch2DCS"),
 
-	version		 = "1.0.0 Beta",
+	version		 = "1.0.1 Beta",
 	state		 = "installed",
 	developerName= _("Jabbers_"),
 	info		 = _("Twitch2DCS oh baby!"),
