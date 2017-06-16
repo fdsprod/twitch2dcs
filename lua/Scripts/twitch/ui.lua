@@ -80,7 +80,7 @@ function UI:new()
     ui.vsScroll.onChange = ui.onChange_vsScroll
     ui.eMessage.onChange = ui.onChange_eMessage    
     
-    if hideShowHotkey and hideShowHotkey ~= "NONE" then
+    if hideShowHotkey and hideShowHotkey ~= "" and hideShowHotkey ~= "NONE" then
         ui.window:addHotKeyCallback(hideShowHotkey, function() ui:nextMode() end)
     end
 
