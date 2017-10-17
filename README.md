@@ -31,5 +31,4 @@ _New Installs_
 
 ### Support
 
-Discord - https://discord.gg/8zKd6ea
-Gitter - https://gitter.im/jeffboulanger/twitch2dcs
+Discord - https://discord.gg/SWFgRxw
