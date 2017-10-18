@@ -15,7 +15,7 @@ return
 	lockUIPosition			= DbOption.new():setValue(false):checkbox(),
 	showJoinPart			= DbOption.new():setValue(false):checkbox(),
 	hideShowHotkey			= DbOption.new():setValue(0):combo({
-								DbOption.Item(_('None')):Value(""),
+								DbOption.Item(_('Ctrl+Shift+NumPad .')):Value("Ctrl+Shift+[.]"),
 								DbOption.Item(_('NumPad .')):Value("[.]"),
 								DbOption.Item(_('NumPad -')):Value("[-]"),
 								DbOption.Item(_('NumPad /')):Value("[/]"),
