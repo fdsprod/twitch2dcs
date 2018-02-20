@@ -11,24 +11,3 @@ Twitch2DCS was primarily created so that DCS World streamers who played in VR co
 * Random colors assigned to each user in chat (simular to twitch)
 * Colors are customizable in Config/Twitch2DCSConfig.lua
 * Ability to use Multiplayer chat instead of Twitch chat.  *Using Multiplayer chat will only allow you to see twitch chat during multiplayer games*.
-
-### Installation
-
-_Upgrade_
-
-1.  Extract the contents of Twitch2DCS.v0.0.2-alpha - Upgrade.zip to your Saved Games DCS folder
- (C:\Users\ _username_ \Saved Games\DCS)
-5. Launch DCS and enjoy communicating with Twitch from ingame.
-
-_New Installs_
-
-1.  Extract the contents of Twitch2DCS.v0.0.2-alpha - New Installation.zip to your Saved Games DCS folder
- (C:\Users\ _username_ \Saved Games\DCS)
-2. Open the file Twitch2DCSConfig.lua in the Config folder with your favorite text editor.
-3. Add your Twitch username
-4. Add your Twitch oauth key from [TwitchApps.com](http://twitchapps.com/tmi/) make sure you include the **"oauth:"** text
-5. Launch DCS and enjoy communicating with Twitch from ingame.
-
-### Support
-
-Discord - https://discord.gg/SWFgRxw
