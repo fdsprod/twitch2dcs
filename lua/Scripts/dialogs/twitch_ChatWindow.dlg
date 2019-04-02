@@ -1,0 +1,523 @@
+dialog = {
+	["children"] = {
+		["Box"] = {
+			["children"] = {
+				["pMsg"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 238,
+							["w"] = 316,
+							["x"] = 17,
+							["y"] = 10,
+						},
+						["enabled"] = true,
+						["layout"] = {},
+						["text"] = "panel0",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "panelSkin",
+						},
+					},
+					["type"] = "Panel",
+				},
+				["vsScroll"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 243,
+							["w"] = 16,
+							["x"] = 344,
+							["y"] = 10,
+						},
+						["enabled"] = true,
+						["pageStep"] = 10,
+						["range"] = {
+							["max"] = 100,
+							["min"] = 0,
+						},
+						["step"] = 1,
+						["text"] = "vertScrollBar0",
+						["thumbValue"] = 30,
+						["tooltip"] = "",
+						["value"] = 0,
+						["visible"] = true,
+						["zindex"] = 2,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "vertScrollBarSkin_by_chat",
+						},
+					},
+					["type"] = "VertScrollBar",
+				},
+			},
+			["params"] = {
+				["bounds"] = {
+					["h"] = 467,
+					["w"] = 360,
+					["x"] = 0,
+					["y"] = 55,
+				},
+				["enabled"] = true,
+				["layout"] = {},
+				["text"] = "panel0",
+				["tooltip"] = "",
+				["visible"] = true,
+				["zindex"] = 0,
+			},
+			["skin"] = {
+				["params"] = {
+					["name"] = "panelSkin",
+				},
+			},
+			["type"] = "Panel",
+		},
+		["btnMail"] = {
+			["params"] = {
+				["bounds"] = {
+					["h"] = 73,
+					["w"] = 24,
+					["x"] = 12,
+					["y"] = 222,
+				},
+				["enabled"] = true,
+				["tabOrder"] = 0,
+				["text"] = "",
+				["tooltip"] = "",
+				["visible"] = true,
+				["zindex"] = 0,
+			},
+			["skin"] = {
+				["params"] = {
+					["name"] = "buttonSkin_chat_mail_ikon",
+				},
+				["states"] = {
+					["pressed"] = {
+						[1] = {
+							["bkg"] = {
+								["center_bottom"] = "$nil$",
+								["center_center"] = "$nil$",
+								["center_top"] = "$nil$",
+								["file"] = "$nil$",
+								["insets"] = "$nil$",
+								["left_bottom"] = "$nil$",
+								["left_center"] = "$nil$",
+								["left_top"] = "$nil$",
+								["right_bottom"] = "$nil$",
+								["right_center"] = "$nil$",
+								["right_top"] = "$nil$",
+							},
+						},
+					},
+					["released"] = {
+						[1] = {
+							["picture"] = {
+								["vertAlign"] = {
+									["type"] = "min",
+								},
+							},
+							["text"] = {
+								["vertAlign"] = {
+									["type"] = "min",
+								},
+							},
+						},
+					},
+				},
+			},
+			["type"] = "Button",
+		},
+		["pNoVisible"] = {
+			["children"] = {
+				["eWhiteText"] = {
+					["params"] = {
+						["acceptDecimalPoint"] = false,
+						["bounds"] = {
+							["h"] = 20,
+							["w"] = 100,
+							["x"] = 6,
+							["y"] = 389,
+						},
+						["enabled"] = true,
+						["multiline"] = true,
+						["numeric"] = false,
+						["password"] = false,
+						["readOnly"] = true,
+						["tabOrder"] = 0,
+						["text"] = "eWhiteText",
+						["textWrapping"] = true,
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["horzScrollBarHeight"] = 0,
+							["linesPerWheelClick"] = 0,
+							["name"] = "editBox_row_chat",
+							["textOffset"] = {
+								["horz"] = 0,
+								["vert"] = 0,
+							},
+							["vertScrollBarWidth"] = 0,
+						},
+						["skins"] = {
+							["horzScrollBar"] = {
+								["skinData"] = {
+									["params"] = {
+										["maxSize"] = {
+											["vert"] = 0,
+										},
+										["minSize"] = {
+											["vert"] = 0,
+										},
+									},
+								},
+							},
+							["vertScrollBar"] = {
+								["skinData"] = {
+									["params"] = {
+										["maxSize"] = {
+											["horz"] = 0,
+										},
+										["minSize"] = {
+											["horz"] = 0,
+										},
+									},
+								},
+							},
+						},
+						["states"] = {
+							["released"] = {
+								[2] = {
+									["text"] = {
+										["color"] = "0xffffffff",
+										["horzAlign"] = {
+											["type"] = "min",
+										},
+										["shadowColor"] = "0x000000ff",
+										["shadowOffset"] = {
+											["horz"] = "$nil$",
+											["vert"] = "$nil$",
+										},
+										["vertAlign"] = {
+											["type"] = "min",
+										},
+									},
+								},
+							},
+						},
+					},
+					["type"] = "EditBox",
+				},
+				["pModeRead"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 30,
+							["w"] = 32,
+							["x"] = 91,
+							["y"] = 204,
+						},
+						["enabled"] = true,
+						["layout"] = {},
+						["text"] = "Panel1",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "panelSkin",
+						},
+						["states"] = {
+							["released"] = {
+								[1] = {
+									["bkg"] = {
+										["center_center"] = "0xffffff00",
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Panel",
+				},
+				["pModeWrite"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 36,
+							["w"] = 40,
+							["x"] = 13,
+							["y"] = 203,
+						},
+						["enabled"] = true,
+						["layout"] = {},
+						["text"] = "panel0",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "panelSkin",
+						},
+						["states"] = {
+							["released"] = {
+								[1] = {
+									["bkg"] = {
+										["center_center"] = "0x00000064",
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Panel",
+				},
+				["sBlueText"] = {
+					["params"] = {
+						["angle"] = 0,
+						["bounds"] = {
+							["h"] = 20,
+							["w"] = 100,
+							["x"] = 22,
+							["y"] = 112,
+						},
+						["enabled"] = true,
+						["pivotPoint"] = {
+							["x"] = 0,
+							["y"] = 0,
+						},
+						["text"] = "Static2",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticSkin",
+							["textWrapping"] = true,
+						},
+						["states"] = {
+							["released"] = {
+								[1] = {
+									["text"] = {
+										["color"] = "0x0808dbff",
+										["font"] = "DejaVuLGCSansCondensed-Bold.ttf",
+										["lineHeight"] = 0,
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Static",
+				},
+				["sOptValue"] = {
+					["params"] = {
+						["angle"] = 0,
+						["bounds"] = {
+							["h"] = 17,
+							["w"] = 81,
+							["x"] = 435,
+							["y"] = 169,
+						},
+						["enabled"] = true,
+						["pivotPoint"] = {
+							["x"] = 0,
+							["y"] = 0,
+						},
+						["text"] = "sOptValue",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticSkin2_scrollPane_text",
+						},
+						["states"] = {
+							["released"] = {
+								[1] = {
+									["text"] = {
+										["fontSize"] = 13,
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Static",
+				},
+				["sRedText"] = {
+					["params"] = {
+						["angle"] = 0,
+						["bounds"] = {
+							["h"] = 20,
+							["w"] = 100,
+							["x"] = 24,
+							["y"] = 66,
+						},
+						["enabled"] = true,
+						["pivotPoint"] = {
+							["x"] = 0,
+							["y"] = 0,
+						},
+						["text"] = "Static1",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticSkin",
+							["textWrapping"] = true,
+						},
+						["states"] = {
+							["released"] = {
+								[1] = {
+									["text"] = {
+										["color"] = "0xfd5151ff",
+										["font"] = "DejaVuLGCSansCondensed-Bold.ttf",
+										["lineHeight"] = 0,
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Static",
+				},
+				["sWhiteText"] = {
+					["params"] = {
+						["angle"] = 0,
+						["bounds"] = {
+							["h"] = 20,
+							["w"] = 100,
+							["x"] = 26,
+							["y"] = 157,
+						},
+						["enabled"] = true,
+						["pivotPoint"] = {
+							["x"] = 0,
+							["y"] = 0,
+						},
+						["text"] = "Static3",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticSkin",
+							["textWrapping"] = true,
+						},
+						["states"] = {
+							["released"] = {
+								[1] = {
+									["text"] = {
+										["color"] = "0xffffffff",
+										["font"] = "DejaVuLGCSansCondensed-Bold.ttf",
+										["lineHeight"] = 0,
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Static",
+				},
+				["sYellowText"] = {
+					["params"] = {
+						["angle"] = 0,
+						["bounds"] = {
+							["h"] = 20,
+							["w"] = 100,
+							["x"] = 24,
+							["y"] = 20,
+						},
+						["enabled"] = true,
+						["pivotPoint"] = {
+							["x"] = 0,
+							["y"] = 0,
+						},
+						["text"] = "static0",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticSkin",
+							["textWrapping"] = true,
+						},
+						["states"] = {
+							["released"] = {
+								[1] = {
+									["text"] = {
+										["color"] = "0xfbb941ff",
+										["font"] = "DejaVuLGCSansCondensed-Bold.ttf",
+										["fontSize"] = 14,
+										["lineHeight"] = 0,
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Static",
+				},
+			},
+			["params"] = {
+				["bounds"] = {
+					["h"] = 435,
+					["w"] = 228,
+					["x"] = 442,
+					["y"] = 31,
+				},
+				["enabled"] = true,
+				["layout"] = {},
+				["text"] = "panel0",
+				["tooltip"] = "",
+				["visible"] = false,
+				["zindex"] = 0,
+			},
+			["skin"] = {
+				["params"] = {
+					["name"] = "panelSkin",
+				},
+			},
+			["type"] = "Panel",
+		},
+	},
+	["params"] = {
+		["bounds"] = {
+			["h"] = 742,
+			["w"] = 693,
+			["x"] = 0,
+			["y"] = 0,
+		},
+		["clipResizeCursor"] = false,
+		["draggable"] = true,
+		["enabled"] = true,
+		["hasCursor"] = true,
+		["layout"] = {},
+		["lockFlow"] = false,
+		["modal"] = false,
+		["offscreen"] = false,
+		["resizable"] = false,
+		["text"] = "Twitch2DCS",
+		["zOrder"] = 120,
+	},
+	["skin"] = {
+		["params"] = {
+			["name"] = "windowSkin",
+		},
+		["states"] = {
+			["released"] = {
+				[1] = {
+					["bkg"] = {
+						["center_center"] = "0x00000000",
+					},
+				},
+			},
+		},
+	},
+	["type"] = "Window",
+}

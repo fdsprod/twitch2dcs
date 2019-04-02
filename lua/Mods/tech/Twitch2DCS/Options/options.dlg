@@ -1,0 +1,636 @@
+dialog = {
+	["children"] = {
+		["containerPlugin"] = {
+			["children"] = {
+				["nameLabel"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 25,
+							["w"] = 890,
+							["x"] = 57,
+							["y"] = 30,
+						},
+						["enabled"] = true,
+						["text"] = "$TWITCH2DCS_OPTIONS_TITLE",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticOptionsTitleSkin",
+						},
+					},
+					["type"] = "Static",
+				},
+				["versionComment"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 14,
+							["w"] = 150,
+							["x"] = 440,
+							["y"] = 50,
+						},
+						["enabled"] = true,
+						["text"] = "$TWITCH2DCS_OPTIONS_VERSION",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticOptionsCommentSkin",
+						},
+						["states"] = {
+							["released"] = {
+								[1] = {
+									["text"] = {
+										["font"] = "DejaVuLGCSansCondensed.ttf",
+										["fontSize"] = 11,
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Static",
+				},
+				["isEnabledCheckbox"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 18,
+							["w"] = 300,
+							["x"] = 57,
+							["y"] = 95,
+						},
+						["enabled"] = true,
+						["tabOrder"] = 0,
+						["text"] = "$TWITCH2DCS_ENABLE_TEXT",
+						["tooltip"] = "Enable/Disable",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "checkBoxSkin_options",
+						},
+					},
+					["type"] = "CheckBox",
+				},
+				["usernameLabel"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 24,
+							["w"] = 300,
+							["x"] = 57,
+							["y"] = 140,
+						},
+						["enabled"] = true,
+						["text"] = "$TWITCH2DCS_USERNAME",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticOptionsCaptionSkin",
+						},
+					},
+					["type"] = "Static",
+				},
+				["usernameEditBox"] = {
+					["params"] = {
+						["acceptDecimalPoint"] = true,
+						["bounds"] = {
+							["h"] = 24,
+							["w"] = 300,
+							["x"] = 57,
+							["y"] = 165,
+						},
+						["enabled"] = true,
+						["multiline"] = false,
+						["numeric"] = false,
+						["password"] = false,
+						["readOnly"] = false,
+						["tabOrder"] = 0,
+						["text"] = "",
+						["textWrapping"] = true,
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "editBoxSimpleMissionGeneratorSkin",
+							["selectionFontColor"] = "0xfffffffe",
+							["textOffset"] = {
+								["horz"] = 3,
+							},
+						},
+						["states"] = {
+							["enabled"] = {
+								[1] = {
+									["text"] = {
+										["fontSize"] = 14,
+									},
+								},
+							},
+							["released"] = {
+								[1] = {
+									["bkg"] = {
+										["center_bottom"] = "0xc8c8c8ff",
+										["center_top"] = "0xc8c8c8ff",
+										["left_bottom"] = "0xc8c8c8ff",
+										["left_center"] = "0xc8c8c8ff",
+										["left_top"] = "0xc8c8c8ff",
+										["right_bottom"] = "0xc8c8c8ff",
+										["right_center"] = "0xc8c8c8ff",
+										["right_top"] = "0xc8c8c8ff",
+									},
+									["text"] = {
+										["color"] = "0xffffffff",
+										["fontSize"] = 14,
+										["vertAlign"] = {
+											["offset"] = "$nil$",
+										},
+									},
+								},
+							},
+						},
+					},
+					["type"] = "EditBox",
+				},
+				["oauthLabel"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 24,
+							["w"] = 300,
+							["x"] = 57,
+							["y"] = 210,
+						},
+						["enabled"] = true,
+						["text"] ="$TWITCH2DCS_OAUTH",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticOptionsCaptionSkin",
+						},
+					},
+					["type"] = "Static",
+				},
+				["oauthFetchButton"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 15,
+							["w"] = 80,
+							["x"] = 190,
+							["y"] = 214,
+						},
+						["enabled"] = true,
+						["tabOrder"] = 0,
+						["text"] = "$TWITCH2DCS_OAUTH_BUTTON",
+						["tooltip"] = "",
+						["visible"] = false,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "buttonSkin",
+						},
+						["states"] = {
+							["disabled"] = {
+								[1] = {
+									["bkg"] = {
+										["center_bottom"] = "$nil$",
+										["center_center"] = "$nil$",
+										["center_top"] = "$nil$",
+										["file"] = "$nil$",
+										["insets"] = {
+											["bottom"] = 10,
+											["top"] = 10,
+										},
+										["left_bottom"] = "$nil$",
+										["left_center"] = "0x00000019",
+										["left_top"] = "$nil$",
+										["right_bottom"] = "$nil$",
+										["right_center"] = "0x00000019",
+										["right_top"] = "$nil$",
+									},
+									["text"] = {
+										["bkgColor"] = "0x00000000",
+										["blurColor"] = "0x00000000",
+										["color"] = "0xffffff40",
+										["font"] = "DejaVuLGCSansCondensed.ttf",
+										["fontSize"] = 11,
+										["horzAlign"] = {
+											["offset"] = 0,
+										},
+										["lineHeight"] = 0,
+										["lineThroughColor"] = "0x00000000",
+										["lineThroughHeight"] = 1,
+										["lineThroughOffset"] = 1,
+										["shadowColor"] = "0x00000000",
+										["vertAlign"] = {
+											["offset"] = 0,
+										},
+									},
+								},
+							},
+							["hover"] = {
+								[1] = {
+									["bkg"] = {
+										["insets"] = {
+											["bottom"] = 10,
+											["left"] = 1,
+											["right"] = 1,
+											["top"] = 10,
+										},
+										["left_center"] = "0x00000019",
+										["right_center"] = "0x00000019",
+									},
+									["text"] = {
+										["bkgColor"] = "0x00000000",
+										["blur"] = 0,
+										["blurColor"] = "0x00000000",
+										["color"] = "0xffffffff",
+										["font"] = "DejaVuLGCSansCondensed.ttf",
+										["fontSize"] = 11,
+										["horzAlign"] = {
+											["offset"] = 0,
+											["type"] = "middle",
+										},
+										["lineHeight"] = 0,
+										["lineThroughColor"] = "0x00000000",
+										["lineThroughHeight"] = 1,
+										["lineThroughOffset"] = 1,
+										["shadowColor"] = "0x00000000",
+										["shadowOffset"] = {
+											["horz"] = 0,
+											["vert"] = 0,
+										},
+										["vertAlign"] = {
+											["offset"] = 0,
+											["type"] = "middle",
+										},
+									},
+								},
+							},
+							["pressed"] = {
+								[1] = {
+									["bkg"] = {
+										["center_bottom"] = "$nil$",
+										["center_center"] = "$nil$",
+										["center_top"] = "$nil$",
+										["file"] = "$nil$",
+										["insets"] = {
+											["bottom"] = 10,
+											["top"] = 10,
+										},
+										["left_bottom"] = "$nil$",
+										["left_center"] = "0x00000019",
+										["left_top"] = "$nil$",
+										["right_bottom"] = "$nil$",
+										["right_center"] = "0x00000019",
+										["right_top"] = "$nil$",
+									},
+									["text"] = {
+										["bkgColor"] = "0x00000000",
+										["blur"] = 0,
+										["blurColor"] = "0x00000000",
+										["color"] = "0xffffffcc",
+										["font"] = "DejaVuLGCSansCondensed.ttf",
+										["fontSize"] = 11,
+										["horzAlign"] = {
+											["offset"] = 0,
+											["type"] = "middle",
+										},
+										["lineHeight"] = 0,
+										["lineThroughColor"] = "0x00000000",
+										["lineThroughHeight"] = 1,
+										["lineThroughOffset"] = 1,
+										["shadowColor"] = "0x00000000",
+										["shadowOffset"] = {
+											["horz"] = 0,
+											["vert"] = 0,
+										},
+										["vertAlign"] = {
+											["offset"] = 0,
+											["type"] = "middle",
+										},
+									},
+								},
+							},
+							["released"] = {
+								[1] = {
+									["bkg"] = {
+										["center_bottom"] = "$nil$",
+										["center_center"] = "$nil$",
+										["center_top"] = "$nil$",
+										["file"] = "$nil$",
+										["insets"] = {
+											["bottom"] = 10,
+											["top"] = 10,
+										},
+										["left_bottom"] = "$nil$",
+										["left_center"] = "0x00000019",
+										["left_top"] = "$nil$",
+										["right_bottom"] = "$nil$",
+										["right_center"] = "0x00000019",
+										["right_top"] = "$nil$",
+									},
+									["text"] = {
+										["color"] = "0xffffff80",
+										["font"] = "DejaVuLGCSansCondensed.ttf",
+										["fontSize"] = 11,
+										["lineHeight"] = 0,
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Button",
+				},
+				["oauthEditBox"] = {
+					["params"] = {
+						["acceptDecimalPoint"] = true,
+						["bounds"] = {
+							["h"] = 24,
+							["w"] = 300,
+							["x"] = 57,
+							["y"] = 235,
+						},
+						["enabled"] = true,
+						["multiline"] = false,
+						["numeric"] = false,
+						["password"] = true,
+						["readOnly"] = false,
+						["tabOrder"] = 0,
+						["text"] = "",
+						["textWrapping"] = true,
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "editBoxSimpleMissionGeneratorSkin",
+							["selectionFontColor"] = "0xfffffffe",
+							["textOffset"] = {
+								["horz"] = 3,
+							},
+						},
+						["states"] = {
+							["enabled"] = {
+								[1] = {
+									["text"] = {
+										["fontSize"] = 14,
+									},
+								},
+							},
+							["released"] = {
+								[1] = {
+									["bkg"] = {
+										["center_bottom"] = "0xc8c8c8ff",
+										["center_top"] = "0xc8c8c8ff",
+										["left_bottom"] = "0xc8c8c8ff",
+										["left_center"] = "0xc8c8c8ff",
+										["left_top"] = "0xc8c8c8ff",
+										["right_bottom"] = "0xc8c8c8ff",
+										["right_center"] = "0xc8c8c8ff",
+										["right_top"] = "0xc8c8c8ff",
+									},
+									["text"] = {
+										["color"] = "0xffffffff",
+										["fontSize"] = 14,
+										["vertAlign"] = {
+											["offset"] = "$nil$",
+										},
+									},
+								},
+							},
+						},
+					},
+					["type"] = "EditBox",
+				},
+				["oauthFetchLink"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 14,
+							["w"] = 220,
+							["x"] = 105,
+							["y"] = 263,
+						},
+						["enabled"] = true,
+						["text"] = "$TWITCH2DCS_OAUTH_LINK",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticOptionsCommentSkin",
+						},
+						["states"] = {
+							["released"] = {
+								[1] = {
+									["text"] = {
+										["font"] = "DejaVuLGCSansCondensed.ttf",
+										["fontSize"] = 10,
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Static",
+				},
+				["lockUIPositionCheckbox"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 18,
+							["w"] = 300,
+							["x"] = 57,
+							["y"] = 310,
+						},
+						["enabled"] = true,
+						["state"] = false,
+						["tabOrder"] = 0,
+						["text"] = "$TWITCH2DCS_LOCKUIPOSITION",
+						["tooltip"] = "Overlay will not accept mouse input",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "checkBoxSkin_options",
+						},
+					},
+					["type"] = "CheckBox",
+				},
+				["lockUIComment"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 14,
+							["w"] = 220,
+							["x"] = 210,
+							["y"] = 312,
+						},
+						["enabled"] = true,
+						["text"] = "$TWITCH2DCS_LOCKUICOMMENT",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticOptionsTitleSkin",
+						},
+						["states"] = {
+							["released"] = {
+								[1] = {
+									["text"] = {
+										["font"] = "DejaVuLGCSansCondensed.ttf",
+										["fontSize"] = 11,
+									},
+								},
+							},
+						},
+					},
+					["type"] = "Static",
+				},
+				["showJoinPartCheckbox"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 18,
+							["w"] = 300,
+							["x"] = 57,
+							["y"] = 350,
+						},
+						["enabled"] = true,
+						["state"] = false,
+						["tabOrder"] = 0,
+						["text"] = "$TWITCH2DCS_SHOW_JOINPART",
+						["tooltip"] = "Monitor who joins and leaves your channel",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "checkBoxSkin_options",
+						},
+					},
+					["type"] = "CheckBox",
+				},
+				["isDebugModeCheckbox"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 18,
+							["w"] = 300,
+							["x"] = 57,
+							["y"] = 390,
+						},
+						["enabled"] = true,
+						["state"] = false,
+						["tabOrder"] = 0,
+						["text"] = "$TWITCH2DCS_DEBUG_MODE_TEXT",
+						["tooltip"] = "Logs additional debug info to help pinpoint specific issues",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "checkBoxSkin_options",
+						},
+					},
+					["type"] = "CheckBox",
+				},
+				["hideShowHotkeyLabel"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 25,
+							["w"] = 210,
+							["x"] = 57,
+							["y"] = 430,
+						},
+						["enabled"] = true,
+						["text"] = "$TWITCH2DCS_MODESHOTKEY",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "staticOptionsCaptionSkin",
+						},
+					},
+					["type"] = "Static",
+				},
+				["hideShowHotkeyComboList"] = {
+					["params"] = {
+						["bounds"] = {
+							["h"] = 25,
+							["w"] = 151,
+							["x"] = 190,
+							["y"] = 430,
+						},
+						["enabled"] = true,
+						["tabOrder"] = 0,
+						["text"] = "Item1",
+						["tooltip"] = "",
+						["visible"] = true,
+						["zindex"] = 0,
+					},
+					["skin"] = {
+						["params"] = {
+							["name"] = "comboListSkin_options",
+						},
+					},
+					["type"] = "ComboList",
+				},
+			},
+			["params"] = {
+				["bounds"] = {
+					["h"] = 600,
+					["w"] = 974,
+					["x"] = 0,
+					["y"] = 0,
+				},
+				["enabled"] = true,
+				["text"] = "",
+				["tooltip"] = "",
+				["visible"] = true,
+				["zindex"] = 2,
+			},
+			["skin"] = {
+				["params"] = {
+					["name"] = "panelSkin",
+				},
+			},
+			["type"] = "Panel",
+		},
+	},
+	["params"] = {
+		["bounds"] = {
+			["h"] = 851,
+			["w"] = 1135,
+			["x"] = 0,
+			["y"] = 0,
+		},
+		["draggable"] = true,
+		["enabled"] = true,
+		["hasCursor"] = true,
+		["lockFlow"] = false,
+		["modal"] = false,
+		["offscreen"] = false,
+		["resizable"] = false,
+		["text"] = "New dialog",
+		["zOrder"] = 0,
+	},
+	["skin"] = {
+		["params"] = {
+			["name"] = "windowSkin",
+		},
+	},
+	["type"] = "Window",
+}
