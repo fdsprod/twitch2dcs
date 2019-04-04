@@ -5,20 +5,17 @@ declare_plugin(self_ID,
 	image		 = "Tacview.png",
 	installed	 = true, -- if false that will be place holder , or advertising
 	dirName		 = current_mod_path,
-	binaries	 =
-	{
---		'Tacview',
-	},
 
 	displayName	 = _("Twitch2DCS"),
 	shortName	 =	 "Twitch2DCS" ,
 	fileMenuName = _("Twitch2DCS"),
 
-	version		 = "1.0.1 Beta",
+	version		 = "1.1.1 Beta",
 	state		 = "installed",
 	developerName= _("Jabbers_"),
-	info		 = _("Twitch2DCS oh baby!"),
-
+	developerLink = _("https://github.com/jeffboulanger/twitch2dcs"),
+	info = _("A simple way to stay connected to your audience within DCS."),
+	
 	Skins	=
 	{
 		{
@@ -37,5 +34,3 @@ declare_plugin(self_ID,
 		},
 	},
 })
-
-plugin_done()

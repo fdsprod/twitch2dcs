@@ -1,4 +1,4 @@
---Some code below from https://github.com/FlightControl-Master/MOOSE/blob/master/Moose%20Development/Moose/Routines.lua
+--Some code below from https://github.com/FlightControl-Master/MOOSE/blob/master/Moose%20Development/Moose/Utilities/Routines.lua
 
 local base				= _G
 
@@ -8,6 +8,7 @@ local string            = base.string
 local pairs         	= base.pairs
 local tostring         	= base.tostring
 local tonumber         	= base.tonumber
+local math				= base.math
 
 module("twitch.utils")
 
@@ -26,7 +27,7 @@ local function MakeTable( t, nice, indent, done )
 	local indent = indent or 0
 	local idt = ""
 	if nice then idt = string.rep( "\t", indent ) end
-	local nl, tab  = "", ""
+	local nl, tab = "", ""
 	if ( nice ) then nl, tab = "\n", "\t" end
 
 	local sequential = IsSequential( t )
@@ -36,7 +37,7 @@ local function MakeTable( t, nice, indent, done )
 		str = str .. idt .. tab .. tab
 
 		if not sequential then
-			if type( key ) == "number" or type( key ) == "boolean" then 
+			if type( key ) == "number" or type( key ) == "boolean" then
 				key = "[" .. tostring( key ) .. "]" .. tab .. "="
 			else
 				key = tostring( key ) .. tab .. "="
@@ -52,8 +53,8 @@ local function MakeTable( t, nice, indent, done )
 			str = str .. idt .. tab .. tab .. tab .. tab .."},".. nl
 
 		else
-		
-			if ( type( value ) == "string" ) then 
+
+			if ( type( value ) == "string" ) then
 				value = '"' .. tostring( value ) .. '"'
 			elseif ( type( value ) == "Vector" ) then
 				value = "Vector(" .. value.x .. "," .. value.y .. "," .. value.z .. ")"
@@ -62,7 +63,7 @@ local function MakeTable( t, nice, indent, done )
 			else
 				value = tostring( value )
 			end
-		
+
 			str = str .. key .. tab .. value .. "," .. nl
 
 		end
@@ -84,11 +85,11 @@ end
 function oneLineSerialize(tbl)  -- serialization of a table all on a single line, no comments, made to replace old get_table_string function
 
 	lookup_table = {}
-	
+
 	local function _Serialize( tbl )
 
 		if type(tbl) == 'table' then --function only works for tables!
-		
+
 			if lookup_table[tbl] then
 				return lookup_table[object]
 			end
@@ -144,7 +145,7 @@ function oneLineSerialize(tbl)  -- serialization of a table all on a single line
 --					env.info('unable to serialize value type ' .. basicSerialize(type(val)) .. ' at index ' .. tostring(ind))
 --					env.info( debug.traceback() )
 				end
-	
+
 			end
 			tbl_str[#tbl_str + 1] = '}'
 			return table.concat(tbl_str)
@@ -152,11 +153,10 @@ function oneLineSerialize(tbl)  -- serialization of a table all on a single line
 			return tostring(tbl)
 		end
 	end
-	
+
 	local objectreturn = _Serialize(tbl)
 	return objectreturn
 end
-
 --porting in Slmod's "safestring" basic serialize
 function basicSerialize(s)
 	if s == nil then
@@ -170,3 +170,32 @@ function basicSerialize(s)
 		end
 	end
 end
+
+function rgbToHex(rgb)
+	local hexadecimal = '0x'
+
+	for key, value in pairs(rgb) do
+		local hex = ''
+		value = value * 255
+		while(value > 0)do
+			local index = math.fmod(value, 16) + 1
+			value = math.floor(value / 16)
+			hex = string.sub('0123456789abcdef', index, index) .. hex
+		end
+
+		if(string.len(hex) == 0)then
+			hex = '00'
+
+		elseif(string.len(hex) == 1)then
+			hex = '0' .. hex
+		end
+
+		hexadecimal = hexadecimal .. hex
+	end
+
+	return hexadecimal .. 'ff'
+end
+
+return {
+	rgbToHex = rgbToHex
+}

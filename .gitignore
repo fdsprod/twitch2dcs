@@ -39,3 +39,5 @@ luac.out
 *.x86_64
 *.hex
 
+/.vs/twitch2dcs/v15/.suo
+/.vs/slnx.sqlite
