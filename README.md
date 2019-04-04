@@ -22,7 +22,7 @@ Twitch2DCS was primarily created so that DCS World streamers who play in VR can 
 5. Restart DCS World.
 
 _Upgrading from a previous version
-1. Extract the downloaded file and place both "Mods" and "Scripts" folders of version 1.11 inside Saved Games/DCS folder.
+1. Extract the downloaded file and place both "Mods" and "Scripts" folders inside Saved Games/DCS folder.
     -- Typically: (C:/Users/ _username_ /Saved Games/DCS) or open Windows Run with LWin+R and enter "%HOMEPATH%/Saved Games", without quotes.
 2. Launch DCS World
 
