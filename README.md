@@ -21,13 +21,10 @@ Twitch2DCS was primarily created so that DCS World streamers who play in VR can 
     -- If DCS posts an error, don't worry, just close the dialog.
 5. Restart DCS World.
 
-_Upgrading from 1.0.3_
-1. Find and remove all files of version 1.0.3 from Saved Games/DCS folder.
-2. Extract the downloaded file and place both "Mods" and "Scripts" folders of version 1.11 inside Saved Games/DCS folder.
+_Upgrading from a previous version
+1. Extract the downloaded file and place both "Mods" and "Scripts" folders of version 1.11 inside Saved Games/DCS folder.
     -- Typically: (C:/Users/ _username_ /Saved Games/DCS) or open Windows Run with LWin+R and enter "%HOMEPATH%/Saved Games", without quotes.
-3. Launch DCS World
-4. Go to Options and find the Special tab for Twitch2DCS.
-5. Confirm the previously inserted data is successfully ported.
+2. Launch DCS World
 
 _Troubleshooting_
 If for any reason something doesn't want to work right or is posting errors, find and delete 'options.lua' inside Saved Games/DCS/Config then restart DCS World and start over with Installation steps.
