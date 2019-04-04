@@ -34,3 +34,5 @@ declare_plugin(self_ID,
 		},
 	},
 })
+
+plugin_done()
