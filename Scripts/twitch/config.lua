@@ -2,17 +2,17 @@ local base = _G
 
 module("twitch.config")
 
-local require       = base.require
-local table         = base.table
-local string        = base.string
-local math          = base.math
-local type          = base.type
-local assert        = base.assert
-local pairs         = base.pairs
-local ipairs        = base.ipairs
+local require = base.require
+local table = base.table
+local string = base.string
+local math = base.math
+local type = base.type
+local assert = base.assert
+local pairs = base.pairs
+local ipairs = base.ipairs
 
-local utils         = require('twitch.utils')
-local OptionsData	= require('Options.Data')
+local utils = require('twitch.utils')
+local OptionsData = require('Options.Data')
 
 Config = {}
 

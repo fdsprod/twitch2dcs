@@ -2,32 +2,32 @@ local base = _G
 
 module("twitch.ui")
 
-local require       = base.require
-local table         = base.table
-local string        = base.string
-local math          = base.math
-local assert        = base.assert
-local pairs         = base.pairs
-local ipairs        = base.ipairs
+local require = base.require
+local table = base.table
+local string = base.string
+local math = base.math
+local assert = base.assert
+local pairs = base.pairs
+local ipairs = base.ipairs
 
-local lfs           = require('lfs')
-local os            = require('os')
-local net           = require('net')
-local DCS           = require("DCS") 
-local U             = require('me_utilities')
-local Skin			= require('Skin')
-local SkinUtils     = require('SkinUtils')
-local Gui           = require('dxgui')
-local DialogLoader  = require('DialogLoader')
-local EditBox       = require('EditBox')
-local ListBoxItem   = require('ListBoxItem')
-local Tools 		= require('tools')
-local MulChat 		= require('mul_chat')
-local tracer        = require("twitch.tracer")
-local Config        = require("twitch.config")
-local utils         = require('twitch.utils')
+local lfs = require('lfs')
+local os = require('os')
+local net = require('net')
+local DCS = require("DCS") 
+local U = require('me_utilities')
+local Skin = require('Skin')
+local SkinUtils = require('SkinUtils')
+local Gui = require('dxgui')
+local DialogLoader = require('DialogLoader')
+local EditBox = require('EditBox')
+local ListBoxItem = require('ListBoxItem')
+local Tools = require('tools')
+local MulChat = require('mul_chat')
+local tracer = require("twitch.tracer")
+local Config = require("twitch.config")
+local utils = require('twitch.utils')
 local UpdateManager = require('UpdateManager')
-local Input         = require('Input')
+local Input = require('Input')
 
 local modes = {
 	hidden = "hidden",

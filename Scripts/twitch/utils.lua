@@ -1,14 +1,14 @@
 --Some code below from https://github.com/FlightControl-Master/MOOSE/blob/master/Moose%20Development/Moose/Utilities/Routines.lua
 
-local base				= _G
+local base = _G
 
-local type 				= base.type
-local table             = base.table
-local string            = base.string
-local pairs         	= base.pairs
-local tostring         	= base.tostring
-local tonumber         	= base.tonumber
-local math				= base.math
+local type = base.type
+local table = base.table
+local string = base.string
+local pairs = base.pairs
+local tostring = base.tostring
+local tonumber = base.tonumber
+local math = base.math
 
 module("twitch.utils")
 

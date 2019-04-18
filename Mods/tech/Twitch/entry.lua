@@ -2,36 +2,20 @@ local self_ID = "Twitch2DCS by Jabbers_"
 
 declare_plugin(self_ID,
 {
-	image		 = "Tacview.png",
-	installed	 = true, -- if false that will be place holder , or advertising
-	dirName		 = current_mod_path,
-
-	displayName	 = _("Twitch2DCS"),
-	shortName	 =	 "Twitch2DCS" ,
-	fileMenuName = _("Twitch2DCS"),
-
-	version		 = "1.1.1 Beta",
-	state		 = "installed",
-	developerName= _("Jabbers_"),
+	image = "Tacview.png",
+	installed = true,
+	dirName = current_mod_path,
+	developerName = _("Jabbers"),
 	developerLink = _("https://github.com/jeffboulanger/twitch2dcs"),
+	displayName = _("Twitch2DCS"),
+	version = "1.1.2 Beta",
+	state = "installed",
 	info = _("A simple way to stay connected to your audience within DCS."),
-	
-	Skins	=
-	{
-		{
-			name	= "Twitch2DCS",
-			dir		= "Theme"
-		},
+	Skins = {
+		{name = "Twitch2DCS", dir = "Theme"},
 	},
-
-	Options =
-	{
-		{
-			name		= _("Twitch2DCS"),
-			nameId		= "Twitch2DCS",
-			dir			= "Options",
-			CLSID		= "{Twitch2DCS options}"
-		},
+	Options = {
+		{name = _("Twitch2DCS"), nameId = "Twitch2DCS", dir = "Options", CLSID = "{Twitch2DCS options}"},
 	},
 })
 

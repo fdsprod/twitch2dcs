@@ -9,12 +9,12 @@ Twitch2DCS was primarily created so that DCS World streamers who play in VR can 
 * Customizable hotkey
 * Not dependent on mission start. The UI exists in every aspect of DCS (Main Menu, Config, Mission Editor, In-Mission) allowing you to always be connected to your audience.
 * Random colors assigned to each user in chat.
-* Colors are customizable in Mods/tech/Twitch2DCS/Options/optionsDb.lua
+* Colors are customizable in Mods/tech/Twitch/Options/optionsDb.lua
 * Ability to use Multiplayer chat instead of Twitch chat. *Using Multiplayer chat will only allow you to see twitch chat during multiplayer games*.
 
 ### Installation
 1. Extract the downloaded file and place both "Mods" and "Scripts" folders inside Saved Games/DCS folder.
-    -- Typically: (C:/Users/ _username_ /Saved Games/DCS) or open Windows Run with LWin+R and enter "%HOMEPATH%/Saved Games", without quotes.
+    -- Typically: (C:/Users/ _username_ /Saved Games/DCS)
 2. Launch DCS World
 3. Go to Options and find the Special tab for Twitch2DCS.
 4. Enter your Twitch channel name and oAuthentication token from [TwitchApps.com](https://twitchapps.com/tmi/). Make sure to include the "oauth:" at the beginning.
@@ -22,8 +22,8 @@ Twitch2DCS was primarily created so that DCS World streamers who play in VR can 
 5. Restart DCS World.
 
 ### Upgrading
-1. Extract the downloaded file and place both "Mods" and "Scripts" folders inside Saved Games/DCS folder.
-    -- Typically: (C:/Users/ _username_ /Saved Games/DCS) or open Windows Run with LWin+R and enter "%HOMEPATH%/Saved Games", without quotes.
+1. Extract the downloaded file and place both "Mods" and "Scripts" folders inside Saved Games/DCS folder. Allow overwrite of current contents.
+    -- Typically: (C:/Users/ _username_ /Saved Games/DCS)
 2. Launch DCS World
 
 ### Troubleshooting

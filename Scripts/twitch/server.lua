@@ -2,16 +2,16 @@ local base = _G
 
 module("twitch.server")
 
-local require       = base.require
-local table         = base.table
-local string        = base.string
-local math          = base.math
-local assert        = base.assert
-local pairs         = base.pairs
-local ipairs        = base.ipairs
+local require = base.require
+local table = base.table
+local string = base.string
+local math = base.math
+local assert = base.assert
+local pairs = base.pairs
+local ipairs = base.ipairs
 
-local socket        = require("socket")
-local tracer        = require("twitch.tracer")
+local socket = require("socket")
+local tracer = require("twitch.tracer")
 
 local Server = {
 	commandHandlers = {},
@@ -92,8 +92,8 @@ function Server:receive()
 								prefix = prefix,
 								user = user,
 								userhost = userhost,
-                                param1 = param1,
-                                param2 = param2
+								param1 = param1,
+								param2 = param2
 							})
 						end
 					end
