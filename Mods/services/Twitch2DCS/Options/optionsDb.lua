@@ -4,7 +4,7 @@ return {
 	isEnabled = DbOption.new():setValue(true):checkbox(),
 	username = DbOption.new():setValue(""):editbox(),
 	oauth = DbOption.new():setValue(""):editbox(),
-	caps = DbOption.new():setValue({"twitch.tv/membership",}),
+	caps = DbOption.new():setValue({"twitch.tv/membership", }),
 	timeout = DbOption.new():setValue(0),
 	hostAddress = DbOption.new():setValue("irc.chat.twitch.tv"),
 	port = DbOption.new():setValue(6667),

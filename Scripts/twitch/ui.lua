@@ -76,7 +76,7 @@ function UI:new()
 	local hideShowHotkey = ui.config:getHideShowHotkey()
 	local position = ui.config:getPosition()
 
-	ui.window = DialogLoader.spawnDialogFromFile(lfs.writedir() .. 'Scripts\\dialogs\\twitch_chat.dlg', cdata)
+	ui.window = DialogLoader.spawnDialogFromFile(lfs.writedir() .. 'Scripts\\Twitch\\dialogs\\chatwindow.dlg', cdata)
 	ui._currentMode = defaultMode
 	ui.box = ui.window.Box
 	ui.btnMail = ui.window.btnMail

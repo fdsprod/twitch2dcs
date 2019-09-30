@@ -1,6 +1,6 @@
 cdata = {
 	TWITCH2DCS_OPTIONS_TITLE = _('Twitch2DCS - A simple way to stay connected to your audience within DCS'),
-	TWITCH2DCS_OPTIONS_VERSION = _('Version 1.1.1 / 2.5.4+'),
+	TWITCH2DCS_OPTIONS_VERSION = _('Version 1.2b / 2.5.5+'),
 	TWITCH2DCS_ENABLE_TEXT = _('Enable'),
 	TWITCH2DCS_USERNAME = _('Twitch Channel'),
 	TWITCH2DCS_OAUTH = _('oAuthentication Token'),

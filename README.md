@@ -21,13 +21,19 @@ Twitch2DCS was primarily created so that DCS World streamers who play in VR can 
     -- If DCS posts an error, don't worry, just close the dialog.
 5. Restart DCS World.
 
-### Upgrading
-1. Extract the downloaded file and place both "Mods" and "Scripts" folders inside Saved Games/DCS folder. Allow overwrite of current contents.
+### Upgrading to Version 1.2
+1. Delete "Twitch" folder from Mods/Tech
+2. Extract the downloaded ZIP and place both "Mods" and "Scripts" folders inside Saved Games/DCS folder. Allow overwrite of current contents.
     -- Typically: (C:/Users/ _username_ /Saved Games/DCS)
-2. Launch DCS World
+3. Launch DCS World
 
 ### Troubleshooting
-If for any reason something doesn't want to work right or is posting errors, find and delete 'options.lua' inside Saved Games/DCS/Config then restart DCS World and start over with Installation steps.
+If for any reason something isn't working right or is posting errors, a simple fix is find and delete 'options.lua' file inside Saved Games/DCS/Config then restart DCS World and start over with Installation.
 
 ### Support
 ED Thread - https://forums.eagle.ru/showthread.php?t=178302
+
+### Credits
+Created by Jeff ["Jabbers"](https://forums.eagle.ru/member.php?u=122130) Boulanger
+Maintained by Jeff ["Jabbers"](https://forums.eagle.ru/member.php?u=122130) Boulanger & Randy ["Tailhook"](https://forums.eagle.ru/member.php?u=90028) Thom
+Contributed code by [MOOSE Development Team](https://github.com/FlightControl-Master)

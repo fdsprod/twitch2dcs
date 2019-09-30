@@ -1,4 +1,4 @@
-local self_ID = "Twitch2DCS by Jabbers_"
+local self_ID = "Twitch2DCS by Jabbers"
 
 declare_plugin(self_ID,
 {
@@ -8,7 +8,7 @@ declare_plugin(self_ID,
 	developerName = _("Jabbers"),
 	developerLink = _("https://github.com/jeffboulanger/twitch2dcs"),
 	displayName = _("Twitch2DCS"),
-	version = "1.1.2 Beta",
+	version = "1.2b",
 	state = "installed",
 	info = _("A simple way to stay connected to your audience within DCS."),
 	Skins = {
