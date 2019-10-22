@@ -28,7 +28,7 @@ Twitch2DCS was primarily created so that DCS World streamers who play in VR can 
 2. Launch DCS World
 
 #### Troubleshooting
-If for any reason something isn't working right or is posting errors, a simple fix is find and delete 'options.lua' file inside Saved Games/DCS/Config then restart DCS World and start over with Installation.
+If something isn't working right or is posting errors, a quick fix is find and delete 'options.lua' file inside Saved Games/DCS/Config. DCS World will then be restored to default settings allowing you to start over fresh with Installation steps.
 
 #### Support
 ED Thread - https://forums.eagle.ru/showthread.php?t=178302
