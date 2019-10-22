@@ -11,8 +11,8 @@ local assert = base.assert
 local pairs = base.pairs
 local ipairs = base.ipairs
 
-local utils = require('twitch.utils')
 local OptionsData = require('Options.Data')
+local utils = require('twitch.utils')
 
 Config = {}
 

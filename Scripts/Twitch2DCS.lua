@@ -309,5 +309,5 @@ end)
 
 if err ~= nil then
 	net.log("Twitch2DCS failed to load - "..err)
-	MsgWindow.warning(err, "Twitch2DCS Failure"):show()
+	MsgWindow.warning(err, "Twitch2DCS"):show()
 end

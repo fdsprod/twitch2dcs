@@ -25,7 +25,6 @@ local Tools = require('tools')
 local MulChat = require('mul_chat')
 local tracer = require("twitch.tracer")
 local Config = require("twitch.config")
-local utils = require('twitch.utils')
 local UpdateManager = require('UpdateManager')
 local Input = require('Input')
 
