@@ -8,7 +8,7 @@ declare_plugin(self_ID,
 	developerName = _("Jabbers"),
 	developerLink = _("https://github.com/jeffboulanger/twitch2dcs"),
 	displayName = _("Twitch2DCS"),
-	version = "1.2b",
+	version = "1.1.3",
 	state = "installed",
 	info = _("A simple way to stay connected to your audience within DCS."),
 	Skins = {

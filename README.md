@@ -13,19 +13,19 @@ Twitch2DCS was primarily created so that DCS World streamers who play in VR can 
 * Ability to use Multiplayer chat instead of Twitch chat. *Using Multiplayer chat will only allow you to see twitch chat during multiplayer games*.
 
 #### Installation
-1. Find your Saved Games/DCS folder. -- Typically: (C:/Users/_username_/Saved Games/DCS)
+1. Find your Saved Games/DCS folder.
+    -- Typically: (C:/Users/_username_/Saved Games/DCS)
 2. Extract the downloaded ZIP and place both "Mods" and "Scripts" folders inside Saved Games/DCS folder.
 3. Launch DCS World
 4. Go to Options and find the 'Special' tab for Twitch2DCS.
-5. Enter your Twitch channel name and oAuthentication token from [TwitchApps.com](https://twitchapps.com/tmi/). Make sure to include the "oauth:" at the beginning. -- If DCS posts an error, don't worry, just close the dialog.
+5. Enter your Twitch channel name and oAuthentication token from [TwitchApps.com](https://twitchapps.com/tmi/). Make sure to include the "oauth:" at the beginning.
+    -- If DCS posts an error, just close the dialog.
 6. Restart DCS World.
 
-#### Upgrading to Version 1.2
-1. Find your Saved Games/DCS folder. -- Typically: (C:/Users/_username_/Saved Games/DCS)
-2. Delete "Twitch" folder from Saved Games/Mods/Tech.
-3. Delete all Twitch2DCS name related files and folders from Saved Games/Scripts and subfolders.
-4. Extract the downloaded ZIP and place both "Mods" and "Scripts" folders inside Saved Games/DCS folder.
-5. Launch DCS World
+#### Upgrading
+1. Extract the downloaded file and place both "Mods" and "Scripts" folders inside Saved Games/DCS folder.
+    -- Typically: (C:/Users/ _username_ /Saved Games/DCS) or open Windows Run with LWin+R and enter "%HOMEPATH%/Saved Games", without quotes.
+2. Launch DCS World
 
 #### Troubleshooting
 If for any reason something isn't working right or is posting errors, a simple fix is find and delete 'options.lua' file inside Saved Games/DCS/Config then restart DCS World and start over with Installation.
