@@ -75,11 +75,6 @@ function Server:receive()
 				else
 					local prefix, cmd, param = string.match(buffer, "^:([^ ]+) ([^ ]+)(.*)$")
 
-					param = string.sub(param,2)
-
-					local param1, param2 = string.match(param,"^([^:]+) :(.*)$")
-					local user, userhost = string.match(prefix,"^([^!]+)!(.*)$")
-
 					if cmd == "376" then
 						self:send("JOIN #"..self.username)
 					end
@@ -87,13 +82,18 @@ function Server:receive()
 					local handlers = self.commandHandlers[cmd]
 
 					if param ~= nil and handlers ~= nil then
+						param = string.sub(param,2)
+
+						local param1, param2 = string.match(param,"^([^:]+) :(.*)$")
+						local user, userhost = string.match(prefix,"^([^!]+)!(.*)$")
+
 						for i, handler in ipairs(handlers) do
 							handler({
 								prefix = prefix,
 								user = user,
 								userhost = userhost,
-                                param1 = param1,
-                                param2 = param2
+								param1 = param1,
+								param2 = param2
 							})
 						end
 					end
