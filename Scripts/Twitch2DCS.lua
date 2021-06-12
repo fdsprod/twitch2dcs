@@ -233,7 +233,7 @@ local status, err = pcall(function()
 	function TwitchClient:receive()
 		local err = self.server:receive()
 
-		if err and err ~= "timeout" and err == "closed" and self:isEnabled() then
+		if err and err ~= "timeout" and err == "closed" and config:isEnabled() then
 			self.server:reset()
 
 			local authInfo = config:getAuthInfo()
