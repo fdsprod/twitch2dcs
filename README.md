@@ -21,6 +21,10 @@ Twitch2DCS was primarily created so that DCS World streamers who play in VR can 
     -- If DCS posts an error, don't worry, just close the dialog.
 5. Restart DCS World.
 
+[![INSTALL AND SETUP](https://media.discordapp.net/attachments/415664512981794818/1075910801052938351/image.png?width=647&height=358)](https://www.youtube.com/watch?v=6-YaacFA63E)
+
+
+
 ### Upgrading
 1. Extract the downloaded file and place both "Mods" and "Scripts" folders inside Saved Games/DCS folder.
     -- Typically: (C:/Users/ _username_ /Saved Games/DCS) or open Windows Run with LWin+R and enter "%HOMEPATH%/Saved Games", without quotes.
